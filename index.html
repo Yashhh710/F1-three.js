@@ -1,0 +1,3788 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/?size=100&id=L136Pr0zto21&format=png&color=000000">
+    <title>3D F1</title>
+    <style>
+        /* Base Reset & Core Setup */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            /* Cinematic dark-blue palette */
+            --water-top: #0018a8;
+            --water-mid: #000c77;
+            --water-bottom: #00074d;
+            --sand-color: #d9a94a;
+            --sand-grid-color: #a97a2e;
+            --sky-top: #04102e;
+            --sky-bottom: #0b1b40;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+        }
+
+        #instructions {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: auto;
+            max-width: 220px;
+            text-align: left;
+            color: #e8ecff;
+            pointer-events: none;
+            font-weight: 400;
+            text-shadow: none;
+            z-index: 150;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: none;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        #instructions .instructions-title {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #bcd4ff;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        #instructions .instructions-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        #instructions .instructions-row:last-child {
+            margin-bottom: 0;
+        }
+
+        #instructions .key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+        }
+
+        #instructions .instructions-label {
+            font-size: 12.5px;
+            color: #dbe4ff;
+            opacity: 0.9;
+        }
+
+        /* Kit Mode Info Panel - Right Side */
+        #kitInfo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            max-width: 260px;
+            text-align: left;
+            color: #e8ecff;
+            pointer-events: auto;
+            font-weight: 400;
+            text-shadow: none;
+            z-index: 150;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: none;
+            font-size: 13px;
+            background: rgba(0, 20, 50, 0.65);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(100, 200, 255, 0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        #kitInfo.visible {
+            display: block;
+        }
+
+        #kitInfo .kit-title {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #64c8ff;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            opacity: 0.95;
+        }
+
+        #kitInfo .kit-section {
+            margin-bottom: 12px;
+        }
+
+        #kitInfo .kit-section:last-child {
+            margin-bottom: 0;
+        }
+
+        #kitInfo .kit-subtitle {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #a0d8ff;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            opacity: 0.85;
+        }
+
+        #kitInfo .kit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #dbe4ff;
+            opacity: 0.9;
+        }
+
+        #kitInfo .kit-item:last-child {
+            margin-bottom: 0;
+        }
+
+        #kitInfo .kit-bullet {
+            color: #64c8ff;
+            font-weight: 700;
+            margin-right: 4px;
+        }
+
+        /* Drive Mode Info Panel - Right Side */
+        #driveInfo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            max-width: 280px;
+            text-align: left;
+            color: #e8ecff;
+            pointer-events: auto;
+            font-weight: 400;
+            text-shadow: none;
+            z-index: 150;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: none;
+            font-size: 13px;
+            background: rgba(0, 20, 50, 0.65);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 100, 100, 0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        #driveInfo.visible {
+            display: block;
+        }
+
+        #driveInfo .drive-title {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #ff6464;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            opacity: 0.95;
+        }
+
+        #driveInfo .drive-section {
+            margin-bottom: 12px;
+        }
+
+        #driveInfo .drive-section:last-child {
+            margin-bottom: 0;
+        }
+
+        #driveInfo .drive-subtitle {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #ff9090;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            opacity: 0.85;
+        }
+
+        #driveInfo .drive-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #dbe4ff;
+            opacity: 0.9;
+        }
+
+        #driveInfo .drive-item:last-child {
+            margin-bottom: 0;
+        }
+
+        #driveInfo .drive-bullet {
+            color: #ff6464;
+            font-weight: 700;
+            margin-right: 4px;
+        }
+
+        /* 3D Canvas element positioning overlay */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Glassmorphism camera button */
+        .glass-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 200;
+            transition: background 0.3s;
+        }
+
+        .glass-button:hover {
+            background: rgba(0, 120, 255, 0.6);
+        }
+
+        .glass-button .icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        /* Notification */
+        .camera-notify {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Nitro boost bar */
+        #nitroContainer {
+            position: fixed;
+            bottom: 74px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            z-index: 150;
+            pointer-events: none;
+        }
+
+        #nitroLabel {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #bcd4ff;
+            text-shadow: 0 0 6px rgba(60, 140, 255, 0.8);
+        }
+
+        #nitroBarOuter {
+            width: 220px;
+            height: 14px;
+            border-radius: 8px;
+            background: rgba(5, 10, 30, 0.55);
+            border: 1px solid rgba(120, 170, 255, 0.4);
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #nitroBarFill {
+            height: 100%;
+            width: 100%;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #0057ff, #34c6ff, #a9f2ff);
+            box-shadow: 0 0 10px rgba(70, 170, 255, 0.9);
+            transition: width 0.08s linear, filter 0.15s ease;
+        }
+
+        #nitroBarFill.boosting {
+            filter: brightness(1.4) saturate(1.3);
+            animation: nitroPulse 0.35s infinite alternate;
+        }
+
+        #nitroBarFill.empty {
+            background: linear-gradient(90deg, #3a3f55, #565c78);
+            box-shadow: none;
+        }
+
+        @keyframes nitroPulse {
+            from {
+                box-shadow: 0 0 8px rgba(70, 170, 255, 0.7);
+            }
+
+            to {
+                box-shadow: 0 0 18px rgba(140, 220, 255, 1);
+            }
+        }
+
+        #boostFlash {
+            position: fixed;
+            top: 42%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 900;
+            font-size: 34px;
+            letter-spacing: 4px;
+            color: #aee0ff;
+            text-shadow: 0 0 16px rgba(60, 170, 255, 0.9), 0 0 40px rgba(60, 140, 255, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 160;
+        }
+
+        #boostFlash.show {
+            animation: boostFlashAnim 0.6s ease-out;
+        }
+
+        @keyframes boostFlashAnim {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+
+            25% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.08);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        /* Cinematic letterbox side bars (slide in from left/right edges) */
+        .cine-bar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: #000;
+            z-index: 320;
+            pointer-events: none;
+            transition: width 0.1s linear;  /* Reduced from 0.9s to 0.1s for instant appearance */
+        }
+
+        #cineLeft {
+            left: 0;
+        }
+
+        #cineRight {
+            right: 0;
+        }
+
+        .cine-bar.active {
+            width: 5vw;
+        }
+
+        /* Fullscreen drive intro (image-sequence "video") */
+        #driveIntro {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 300;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #driveIntro video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #000;
+        }
+
+        #videoInfoBox {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            min-width: 330px;
+            min-height: 74px;
+            padding: 18px 22px;
+            background: rgba(255, 255, 255, 0.43);
+            backdrop-filter: blur(80px);
+            border-radius: 25px;
+            color: #111;
+            font-family: Inter, system-ui, sans-serif;
+            font-size: 15px;
+            letter-spacing: 0.02em;
+            z-index: 310;
+            display: none;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.16);
+        }
+
+        /* Startup loader */
+        .loader-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            z-index: 9999;
+            overflow: hidden;
+            pointer-events: all;
+        }
+
+        .loader {
+            overflow: visible;
+            height: fit-content;
+            width: fit-content;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+
+        .logo img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.04);
+                opacity: 0.92;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script type="module">
+        import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
+        window.CANNON = CANNON;
+        window.dispatchEvent(new Event('cannon-es-ready'));
+    </script>
+</head>
+
+<body>
+    <div class="loader-overlay" id="startupLoader">
+        <div class="loader">
+            <img
+                class="logo"
+                src="https://img.icons8.com/?size=100&id=W29g1ixjtkTq&format=png&color=000000"
+                alt="Loading logo"
+            />
+        </div>
+    </div>
+
+    <div id="instructions">
+        <div class="instructions-title">Controls</div>
+        <div class="instructions-row"><span class="key">W</span><span class="key">↑</span><span class="instructions-label">Accelerate</span></div>
+        <div class="instructions-row"><span class="key">S</span><span class="key">↓</span><span class="instructions-label">Brake / Reverse</span></div>
+        <div class="instructions-row"><span class="key">A</span><span class="key">←</span><span class="instructions-label">Turn Left</span></div>
+        <div class="instructions-row"><span class="key">D</span><span class="key">→</span><span class="instructions-label">Turn Right</span></div>
+        <div class="instructions-row"><span class="key">Shift</span><span class="instructions-label">Nitro Boost</span></div>
+        <div class="instructions-row"><span class="key">1-4</span><span class="instructions-label">Camera Views</span></div>
+    </div>
+
+    <div id="kitInfo">
+        <div class="kit-title">Model Building Station</div>
+        <div style="font-size: 12px; color: #c8d8ff; margin-bottom: 10px; opacity: 0.85;">
+            Assemble and customize your model piece by piece. Use the tools and paints to bring your creation to life!
+        </div>
+        
+        <div class="kit-section">
+            <div class="kit-subtitle">Controls</div>
+            <div class="kit-item"><span class="kit-bullet">🖱</span> Click - Select / Interact</div>
+            <div class="kit-item"><span class="kit-bullet">🎥</span> Drag - Rotate Camera</div>
+            <div class="kit-item"><span class="kit-bullet">↖</span> Scroll - Zoom In / Out</div>
+        </div>
+
+        <div class="kit-section">
+            <div class="kit-subtitle">Objective</div>
+            <div class="kit-item">• Build and paint your model</div>
+            <div class="kit-item">• Use all tools to complete your creation</div>
+            <div class="kit-item">• Click on objects to interact</div>
+        </div>
+
+        <div class="kit-section">
+            <div class="kit-subtitle">Quick Tips</div>
+            <div class="kit-item">• Objects can be moved and rotated</div>
+            <div class="kit-item">• Click to select, drag to interact</div>
+            <div class="kit-item">• Explore and experiment freely</div>
+        </div>
+    </div>
+
+    <div id="driveInfo">
+        <div class="drive-title">⚡ F1 Racing Challenge</div>
+        <div style="font-size: 12px; color: #ffb0b0; margin-bottom: 10px; opacity: 0.85;">
+            Race at high speed and push objects around the track. Collect boosts and explore!
+        </div>
+        
+        <div class="drive-section">
+            <div class="drive-subtitle">Controls</div>
+            <div class="drive-item"><span class="drive-bullet">W</span> ↑ - Accelerate</div>
+            <div class="drive-item"><span class="drive-bullet">S</span> ↓ - Brake / Reverse</div>
+            <div class="drive-item"><span class="drive-bullet">A</span> ← - Turn Left</div>
+            <div class="drive-item"><span class="drive-bullet">D</span> → - Turn Right</div>
+            <div class="drive-item"><span class="drive-bullet">⇧ Shift</span> - Nitro Boost</div>
+            <div class="drive-item"><span class="drive-bullet">1-4</span> - Camera Views</div>
+        </div>
+
+        <div class="drive-section">
+            <div class="drive-subtitle">Objective</div>
+            <div class="drive-item">• Drive the F1 car at high speed</div>
+            <div class="drive-item">• Hit and move objects around</div>
+            <div class="drive-item">• Collect power-ups and explore</div>
+        </div>
+
+        <div class="drive-section">
+            <div class="drive-subtitle">Pro Tips</div>
+            <div class="drive-item">• Use nitro boost for speed</div>
+            <div class="drive-item">• Click objects to remove them</div>
+            <div class="drive-item">• Switch cameras with number keys</div>
+        </div>
+    </div>
+
+    <div id="cineLeft" class="cine-bar"></div>
+    <div id="cineRight" class="cine-bar"></div>
+
+    <div id="driveIntro">
+        <video id="driveIntroVideo" src="video.mp4" muted playsinline preload="auto"></video>
+        <div id="videoInfoBox"></div>
+    </div>
+
+    <div id="ui-buttons"
+        style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 100;">
+        <button id="kitBtn"
+            style="padding:8px 16px; background:#00000071; color:#fff; border:none; border-radius:4px; cursor:pointer; font-family: Inter, sans-serif; font-weight: bold;">[
+            Kit ]</button>
+        <button id="driveBtn"
+            style="padding:8px 16px; background:#0000006e; color:#fff; border:none; border-radius:4px; cursor:pointer; font-family: Inter, sans-serif; font-weight: bold;">[
+            Drive ]</button>
+    </div>
+
+    <div id="cameraButton" class="glass-button" style="display: none;">
+        <span class="icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+        </span>
+    </div>
+    <div id="cameraNotify" class="camera-notify"></div>
+
+    <div id="boostFlash">BOOST!</div>
+
+    <div id="nitroContainer">
+        <div id="nitroLabel">NITRO &nbsp;·&nbsp; hold SHIFT</div>
+        <div id="nitroBarOuter">
+            <div id="nitroBarFill"></div>
+        </div>
+    </div>
+
+    <script>
+        const rootStyles = getComputedStyle(document.documentElement);
+        const PALETTE = {
+            waterTop: rootStyles.getPropertyValue('--water-top').trim() || '#0018a8',
+            waterMid: rootStyles.getPropertyValue('--water-mid').trim() || '#000c77',
+            waterBottom: rootStyles.getPropertyValue('--water-bottom').trim() || '#00074d',
+            sand: rootStyles.getPropertyValue('--sand-color').trim() || '#000c77',
+            sandGrid: rootStyles.getPropertyValue('--sand-grid-color').trim() || '#00198f',
+            skyTop: rootStyles.getPropertyValue('--sky-top').trim() || '#04102e',
+            skyBottom: rootStyles.getPropertyValue('--sky-bottom').trim() || '#0b1b40'
+        };
+
+        // Keyboard state tracking (case-insensitive)
+        const keys = {
+            w: false, a: false, s: false, d: false,
+            ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
+            Shift: false
+        };
+        // Set true the first time any tracked key is actually received. Used to
+        // detect "the code is fine but nothing is reaching it" (e.g. keyboard
+        // focus stuck on a docked DevTools panel) and prompt the user to click
+        // the page, instead of leaving them staring at a car that never moves.
+        let __anyKeyReceived = false;
+
+        // Keyboard input handling — the ONLY keydown/keyup logic in the app.
+        // Letter keys are normalized with toLowerCase() so Shift/CapsLock never
+        // breaks the w/a/s/d match; Arrow keys and Shift are passed through as-is
+        // since they're already unambiguous (e.key for them isn't a single letter).
+        // Registered on BOTH window (bubble phase) and document (capture phase,
+        // see bottom of file) so a keystroke is caught even in edge cases where
+        // something else in the page's own DOM would otherwise see it first.
+        // Car control keys — captured at the document level in the CAPTURE phase
+        // so they fire before OrbitControls (or any other handler) can consume them.
+        // preventDefault() stops the browser from scrolling the page with arrow keys.
+        const CAR_KEYS = new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift']);
+        function handleKeyDown(e) {
+            const tag = e.target && e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+            const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+            if (CAR_KEYS.has(key.toLowerCase())) e.preventDefault();
+            // Normalise: single-char keys to lowercase, multi-char (Arrow*, Shift) as-is
+            const mapped = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+            if (mapped in keys) {
+                keys[mapped] = true;
+                __anyKeyReceived = true;
+            }
+        }
+        function handleKeyUp(e) {
+            const mapped = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+            if (mapped in keys) keys[mapped] = false;
+        }
+        // Attach ONLY to document in capture phase — this fires before OrbitControls
+        // and before any bubble-phase handler that might stopPropagation().
+        document.addEventListener('keydown', handleKeyDown, true);
+        document.addEventListener('keyup', handleKeyUp, true);
+        // 1. Three.js Scene Setup
+        const scene = new THREE.Scene();
+        const FOG_COLOR = 0x2f6fc9;
+        scene.fog = new THREE.Fog(FOG_COLOR, 220, 1400);
+
+        // 3. Renderer Configured with Clear Background Transparency
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setClearColor(0x000000, 0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.55;
+        document.body.appendChild(renderer.domElement);
+        // Make the canvas a real focus target: without this, clicking it does
+        // nothing for keyboard focus and W/A/S/D can silently go to whatever
+        // panel last had focus (e.g. a docked DevTools console), which looks
+        // identical to "the car won't move" even though the code is fine.
+        renderer.domElement.tabIndex = 0;
+        renderer.domElement.style.outline = 'none';
+        renderer.domElement.addEventListener('click', () => renderer.domElement.focus());
+        renderer.domElement.focus();
+
+        // 2. Camera Viewport Setup
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 5000);
+        camera.position.set(35, 25, 45);
+
+        const aspect = window.innerWidth / window.innerHeight;
+        const firstPersonCam = new THREE.PerspectiveCamera(75, aspect, 0.1, 5000);
+        const cinematicCam = new THREE.PerspectiveCamera(60, aspect, 0.1, 5000);
+        const thirdBackCam = new THREE.PerspectiveCamera(60, aspect, 0.1, 5000);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.08;
+        controls.minPolarAngle = 0.15;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 5;
+        controls.maxDistance = 800;
+        controls.enableKeys = false; // prevent OrbitControls from consuming WASD / arrow keys
+
+        const cinematicControls = new THREE.OrbitControls(cinematicCam, renderer.domElement);
+        cinematicControls.enableDamping = true;
+        cinematicControls.autoRotate = true;
+        cinematicControls.autoRotateSpeed = 0.6;
+
+        const CameraMode = { DRIVER_FP: 0, CHASE_BACK: 1, CINEMATIC: 2, FREE: 3 };
+        let currentCameraMode = CameraMode.FREE;
+
+        function showNotification(text) {
+            const notify = document.getElementById('cameraNotify');
+            notify.textContent = text;
+            notify.style.animation = 'none';
+            void notify.offsetWidth; // trigger reflow
+            notify.style.animation = 'fadeOut 2.5s forwards';
+        }
+
+        function switchCameraMode(nextMode) {
+            if (typeof nextMode === 'number') {
+                currentCameraMode = nextMode;
+            } else {
+                currentCameraMode = (currentCameraMode + 1) % 4;
+            }
+            switch (currentCameraMode) {
+                case CameraMode.DRIVER_FP:
+                    showNotification('👁️ Driver (First Person)');
+                    break;
+                case CameraMode.CHASE_BACK:
+                    showNotification('🏎️ Hood Camera');
+                    break;
+                case CameraMode.CHASE_CLOSE:
+                    showNotification('📷 Chase Close');
+                    break;
+                case CameraMode.CHASE_FAR:
+                    showNotification('🎬 Chase Far');
+                    break;
+                case CameraMode.ORBIT:
+                    showNotification('🔄 Orbit');
+                    break;
+                case CameraMode.FREE:
+                    showNotification('� Free Cam');
+                    break;
+                case CameraMode.CINEMATIC:
+                    showNotification('🎬 Cinematic');
+                    break;
+                case CameraMode.FREE:
+                    showNotification('🎥 Free Cam');
+                    controls.minDistance = 20;
+                    controls.maxDistance = 200;
+                    break;
+                case CameraMode.CINEMATIC:
+                    showNotification('🎬 Cinematic');
+                    break;
+            }
+        }
+
+        document.getElementById('cameraButton').addEventListener('click', () => switchCameraMode());
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') switchCameraMode();
+            else if (e.key === '1') switchCameraMode(CameraMode.DRIVER_FP);
+            else if (e.key === '2') switchCameraMode(CameraMode.CHASE_BACK);
+            else if (e.key === '3') switchCameraMode(CameraMode.CINEMATIC);
+            else if (e.key === '4') switchCameraMode(CameraMode.FREE);
+        });
+
+        const fpOffset = new THREE.Vector3(0, 4.2, 0.5);
+        const tpOffset = new THREE.Vector3(0, 12.0, -32.0);
+        const fpShake = { magnitude: 0.012 };
+
+        const cinematicShots = [
+            { position: new THREE.Vector3(0, 8, 20), target: new THREE.Vector3(0, 2, 0), duration: 5 },
+            { position: new THREE.Vector3(20, 5, 0), target: new THREE.Vector3(0, 2, 0), duration: 5 },
+            { position: new THREE.Vector3(0, 1, -10), target: new THREE.Vector3(0, 0.5, 0), duration: 5 },
+            { position: new THREE.Vector3(0, 30, 0), target: new THREE.Vector3(0, 0, 0), duration: 5 },
+            { position: new THREE.Vector3(0, 8, -20), target: new THREE.Vector3(0, 2, 0), duration: 5 },
+            { position: new THREE.Vector3(30, 5, 30), target: new THREE.Vector3(0, 2, 0), duration: 5 }
+        ];
+        let cinematicIndex = 0;
+        function startCinematicCycle() {
+            if (!window.cinematicRunning) return;
+            const shot = cinematicShots[cinematicIndex];
+
+            if (isDriveMode && carGroup) {
+                const offset = shot.position.clone().multiplyScalar(1.5);
+                cinematicCam.position.copy(carGroup.position.clone().add(offset));
+            } else {
+                cinematicCam.position.copy(shot.position);
+                cinematicControls.target.copy(shot.target);
+                cinematicCam.lookAt(shot.target);
+            }
+
+            cinematicIndex = (cinematicIndex + 1) % cinematicShots.length;
+            setTimeout(startCinematicCycle, shot.duration * 1000);
+        }
+
+        function getActiveCamera() {
+            if (currentCameraMode === CameraMode.DRIVER_FP) return firstPersonCam;
+            if (currentCameraMode === CameraMode.CHASE_BACK) return thirdBackCam;
+            if (currentCameraMode === CameraMode.CINEMATIC) return cinematicCam;
+            return camera;
+        }
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        function applyCameraCollision(cam) {
+            const dir = new THREE.Vector3();
+            dir.subVectors(cam.position, carGroup ? carGroup.position : new THREE.Vector3(0, 0, 0)).normalize();
+            raycaster.set(cam.position, dir.negate());
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            if (intersects.length && intersects[0].distance < 0.5) {
+                cam.position.add(dir.multiplyScalar(0.5 - intersects[0].distance));
+            }
+        }
+
+        // Handle clicking on models to remove them
+        function onCanvasClick(event) {
+            // Convert mouse position to normalized device coordinates
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            // Raycast from camera
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Find all intersected objects
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            
+            for (let i = 0; i < intersects.length; i++) {
+                let obj = intersects[i].object;
+                
+                // Walk up the hierarchy to find a parent with physics
+                while (obj.parent && obj.parent !== scene) {
+                    // Check if this object or parent has physics
+                    const physicsEntry = physicsObjects.find(p => p.obj === obj || p.obj.parent === obj || p.obj.children?.includes(obj));
+                    if (physicsEntry) {
+                        removeModelFromWorld(obj, physicsEntry.body);
+                        return;
+                    }
+                    obj = obj.parent;
+                }
+                
+                // Direct physics check
+                const physicsEntry = physicsObjects.find(p => p.obj === obj);
+                if (physicsEntry) {
+                    removeModelFromWorld(obj, physicsEntry.body);
+                    return;
+                }
+            }
+        }
+
+        function removeModelFromWorld(model, physicsBody) {
+            // Hide the mesh
+            model.visible = false;
+            model.traverse(child => child.visible = false);
+            
+            // Throw it far outside the world
+            if (physicsBody) {
+                physicsBody.position.set(1000, 1000, 1000);
+                physicsBody.velocity.set(0, 0, 0);
+                physicsBody.angularVelocity.set(0, 0, 0);
+                physicsWorld.removeBody(physicsBody);
+            }
+            
+            // Remove from physics objects array
+            const idx = physicsObjects.findIndex(p => p.body === physicsBody);
+            if (idx !== -1) physicsObjects.splice(idx, 1);
+        }
+
+        renderer.domElement.addEventListener('click', onCanvasClick);
+
+        let shouldLerpCamera = false;
+        let returnToSpawn = false; // flag for smooth return to spawn
+        let returnToSpawnCompleteCallback = null;
+
+        // Sends the car driving itself back onto the craft pad, then fires onComplete.
+        function returnCarToSpawn(onComplete) {
+            if (!carGroup || !carGroup.visible) {
+                if (onComplete) onComplete();
+                return;
+            }
+            returnToSpawn = true;
+            returnToSpawnCompleteCallback = onComplete || null;
+        }
+        let isDriveMode = false;
+        let isCarLoading = false; // Guard flag to prevent double spawning
+
+        // Locks whichever button matches the currently-active mode so it can't be
+        // clicked again while already in that mode; the other button stays usable
+        // so the user can still switch modes.
+        function updateModeButtons() {
+            const kitBtnEl = document.getElementById('kitBtn');
+            const driveBtnEl = document.getElementById('driveBtn');
+            if (!kitBtnEl || !driveBtnEl) return;
+
+            kitBtnEl.disabled = !isDriveMode;
+            driveBtnEl.disabled = isDriveMode;
+
+            [kitBtnEl, driveBtnEl].forEach(btn => {
+                btn.style.opacity = btn.disabled ? '0.45' : '1';
+                btn.style.cursor = btn.disabled ? 'not-allowed' : 'pointer';
+                btn.style.pointerEvents = btn.disabled ? 'none' : 'auto';
+            });
+        }
+        updateModeButtons(); // Page loads in Kit mode by default, so lock the Kit button right away
+        document.getElementById('kitInfo').classList.add('visible');  // Show Kit info box on page load
+        let obstaclesGroup = null;
+        let carGroup = null;
+        let carInnerModel = null;
+        let mattTopY = 0;
+        let kitTargetSize = null;
+        // Axis-aligned world-space bounds of the blue cutting mat (top surface).
+        // Populated once matt.glb finishes loading; used to keep the car's
+        // entire footprint on top of the mat at all times.
+        let matBounds = null;
+
+        let carSpeed = 0;
+        let carHeading = 0;
+        let steeringAngle = 0;
+        // Module-level storage for the car inner model's vertical offset so
+        // the spawn Y can be corrected from any scope (returnToSpawn, etc.)
+        let carHeightOffset = 0;
+        const frontWheelAssemblies = [];
+        const rearWheelAssemblies = [];
+
+        // --- Spawn-safe collision handling ---
+        // Reference to the loaded mat model (kept separate from matPhysicsBody /
+        // kitGroup) purely so it can be explicitly excluded from car-vs-obstacle
+        // checks below, even though it's never registered as a physics obstacle.
+        let mattModel = null;
+        // Timestamp (performance.now()) up until which obstacle collisions are
+        // ignored for the car. Set every time the car (re)spawns/appears so a
+        // fresh 1-second grace period always applies when entering Drive mode.
+        let carSpawnGraceUntil = 0;
+        const CAR_SPAWN_GRACE_MS = 1000;
+        // Distance-based companion to the time-based grace period above: any
+        // locked-prop obstacle whose center is still within this radius of the
+        // point the car most recently spawned/respawned at is never treated as
+        // a blocker, no matter how long the car lingers there. This stops small
+        // desk clutter (tools/tins) sitting right at the spawn point from being
+        // able to permanently trap the car even after the timed grace expires.
+        let carSpawnCenter = { x: 0, z: 0 };
+        let spawnExclusionRadius = 8; // refined once the mat's real size is known
+        // Currently-highlighted "blocking" object for debugging (see
+        // highlightBlockingObject / clearBlockingHighlight below).
+        let __debugHighlighted = null;
+        // TEMPORARY: set to true while debugging, then set back to false (or
+        // delete the CAR_DEBUG block below) once movement is confirmed working.
+        const CAR_DEBUG = false;
+
+        const CAR_PHYSICS = {
+            maxSpeed: 90,           // 2x boost: was 45, now 90
+            reverseSpeed: -36,      // 2x boost: was -18, now -36
+            acceleration: 110,      // 2x boost: was 55, now 110
+            deceleration: 60,       // 2x boost: was 30, now 60
+            brake: 160,             // 2x boost: was 80, now 160
+            steeringSpeed: 7.0,
+            maxSteerAngle: 0.45
+        };
+
+        // Fixed orientation the car settles into on the craft pad, regardless of
+        // whatever direction it was facing when driving stopped.
+        const REST_HEADING = 0;
+        function lerpAngle(a, b, t) {
+            let diff = (b - a) % (Math.PI * 2);
+            if (diff > Math.PI) diff -= Math.PI * 2;
+            if (diff < -Math.PI) diff += Math.PI * 2;
+            return a + diff * t;
+        }
+
+        // --- Nitro boost state ---
+        const NITRO_MAX = 100;
+        let nitroAmount = NITRO_MAX;
+        let isBoosting = false;
+        const NITRO_DRAIN_RATE = 38;   // per second while boosting
+        const NITRO_REGEN_RATE = 14;   // per second while not boosting
+        const NITRO_SPEED_MULT = 2.0;  // Boosted: was 1.55, now 2.0 (2x speed boost)
+        const NITRO_ACCEL_MULT = 2.2;  // Boosted: was 1.8, now 2.2 (even more acceleration)
+        let nitroFlames = null;
+        let wasBoostingLastFrame = false;
+        const nitroBarFillEl = document.getElementById('nitroBarFill');
+        const nitroContainerEl = document.getElementById('nitroContainer');
+        const boostFlashEl = document.getElementById('boostFlash');
+
+        // Cached list of meshes the suspension raycasts test against.
+        // Built once when the car loads; avoids O(n) scene.traverse every frame.
+        let susCollidables = [];
+
+        // ── Tire smoke particles ──────────────────────────────────────────────
+        const smokeParticles = [];
+        const MAX_SMOKE = 60;
+        let smokeClock = 0;
+        function createSmokeParticle(x, y, z) {
+            // Two crossed planes make a billboarded puff without actual sprite support
+            const group = new THREE.Group();
+            for (let i = 0; i < 2; i++) {
+                const geo = new THREE.PlaneGeometry(1, 1);
+                const mat = new THREE.MeshBasicMaterial({
+                    color: 0xbbbbbb, transparent: true, opacity: 0.28,
+                    depthWrite: false, side: THREE.DoubleSide
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.rotation.y = (i * Math.PI) / 2;
+                group.add(mesh);
+            }
+            group.position.set(x, y + 0.4, z);
+            const s = 0.6 + Math.random() * 0.6;
+            group.scale.setScalar(s);
+            group.userData.age = 0;
+            group.userData.life = 0.5 + Math.random() * 0.4;
+            group.userData.vy = 0.9 + Math.random() * 0.6;
+            scene.add(group);
+            smokeParticles.push(group);
+            if (smokeParticles.length > MAX_SMOKE) {
+                const old = smokeParticles.shift();
+                scene.remove(old);
+                old.children.forEach(c => { c.geometry.dispose(); c.material.dispose(); });
+            }
+        }
+        function updateSmoke(delta) {
+            // Billboard every puff toward whichever camera is currently active.
+            // The two crossed planes were previously only rotated on a fixed
+            // local Y axis, so from many viewing angles (especially top-down
+            // or side-on) they'd present edge-on and look like a thin cut
+            // sliver instead of a puff of smoke. Facing the camera fixes that.
+            const activeCam = getActiveCamera();
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                const p = smokeParticles[i];
+                p.userData.age += delta;
+                const t = p.userData.age / p.userData.life;
+                if (t >= 1) {
+                    scene.remove(p);
+                    p.children.forEach(c => { c.geometry.dispose(); c.material.dispose(); });
+                    smokeParticles.splice(i, 1); continue;
+                }
+                p.position.y += p.userData.vy * delta;
+                p.scale.addScalar(delta * 1.5);
+                const opacity = 0.28 * (1 - t);
+                p.children.forEach(c => { c.material.opacity = opacity; });
+                if (activeCam) {
+                    p.quaternion.copy(activeCam.quaternion);
+                    p.rotateZ(p.userData.age * 0.8);
+                } else {
+                    p.rotation.y += delta * 0.8;
+                }
+            }
+        }
+
+        // ── Tire prints on ground ─────────────────────────────────────────────
+        // Previously every stamp was a fixed 0.6 × 1.4 plane dropped every
+        // 0.15s. At any real speed the car travels further than 1.4 units
+        // between stamps, so the "skid mark" was actually a row of
+        // disconnected rectangles with visible gaps — looking like the print
+        // kept getting cut off. Each segment below is stretched to exactly
+        // bridge the distance from the wheel's previous stamp to its current
+        // one, so the trail is one continuous strip with no gaps.
+        const tireMarks = [];
+        const MAX_MARKS = 400;  // Increased from 240 to handle more frequent marks
+        let markClock = 0;
+        const lastMarkPos = [null, null]; // per rear wheel: [left, right]
+        function createTireMark(x, z, heading, groundY, wheelIdx) {
+            const prev = lastMarkPos[wheelIdx];
+            const width = 0.6;
+            let length, midX, midZ, segHeading;
+            if (prev) {
+                const dx = x - prev.x, dz = z - prev.z;
+                const dist = Math.hypot(dx, dz);
+                if (dist < 0.001) { lastMarkPos[wheelIdx] = { x, z }; return; }
+                length = Math.max(dist, 0.05);
+                midX = (x + prev.x) / 2;
+                midZ = (z + prev.z) / 2;
+                // Orient the strip along the actual direction travelled, not
+                // just the car's heading, so it stays glued to the path even
+                // through tight turns.
+                segHeading = Math.atan2(dx, dz);
+            } else {
+                length = 1.4;
+                midX = x; midZ = z;
+                segHeading = heading;
+            }
+            const geo = new THREE.PlaneGeometry(width, length);
+            const mat = new THREE.MeshBasicMaterial({
+                color: 0x111111, transparent: true, opacity: 0.38,
+                depthWrite: false, side: THREE.DoubleSide,
+                polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.rotation.z = segHeading;
+            mesh.position.set(midX, groundY + 0.05, midZ);
+            mesh.renderOrder = 3;
+            scene.add(mesh);
+            tireMarks.push({ mesh, born: performance.now() });
+            lastMarkPos[wheelIdx] = { x, z };
+            if (tireMarks.length > MAX_MARKS) {
+                const old = tireMarks.shift();
+                scene.remove(old.mesh); old.mesh.geometry.dispose(); old.mesh.material.dispose();
+            }
+        }
+        function updateTireMarks() {
+            const now = performance.now();
+            tireMarks.forEach(tm => {
+                const age = (now - tm.born) / 1000;
+                const fade = Math.max(0, 1 - age / 6);
+                tm.mesh.material.opacity = 0.35 * fade;
+            });
+        }
+        let physicsReady = false;
+        const physicsObjects = [];
+        let carPhysicsBody = null;
+        let carPhysicsHalfSize = null;
+        // Full, un-shrunk car footprint (unlike carPhysicsHalfSize, which is
+        // deliberately shrunk for obstacle collisions). Used for the mat-edge
+        // boundary check so the *visible* car body never overhangs the mat —
+        // using the shrunk collision box there let the mesh visually hang off
+        // the edge while physics still thought it was inside the mat.
+        let carFootprintHalfSize = null;
+        let matPhysicsBody = null;
+        let physMat_ground = null, physMat_object = null, physMat_car = null;
+        const __pendingPhysicsRegistrations = [];
+        
+        // Debug visualization for colliders
+        let debugColliderGroup = null;
+        const SHOW_COLLIDER_DEBUG = true;  // Set to false to hide debug wireframes
+
+        function tryInitPhysics() {
+            if (physicsReady || !window.CANNON) return;
+            const CANNON = window.CANNON;
+            physicsWorld = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82 * 2.2, 0) });
+            physicsWorld.broadphase = new CANNON.SAPBroadphase(physicsWorld);
+            physicsWorld.allowSleep = true;
+            physicsWorld.solver.iterations = 25;  // Increased from 12 for more stable collisions
+
+            physMat_ground = new CANNON.Material('groundMat');
+            physMat_object = new CANNON.Material('objectMat');
+            physMat_car = new CANNON.Material('carMat');
+
+            // Ground ↔ object: high friction, minimal bounce for settling
+            physicsWorld.addContactMaterial(new CANNON.ContactMaterial(physMat_ground, physMat_object, {
+                friction: 0.95, restitution: 0.08
+            }));
+            // Car ↔ object: enough friction to push things, controlled bounce on impact
+            physicsWorld.addContactMaterial(new CANNON.ContactMaterial(physMat_car, physMat_object, {
+                friction: 0.45, restitution: 0.25
+            }));
+            // Object ↔ object: slide and tumble naturally with good settling
+            physicsWorld.addContactMaterial(new CANNON.ContactMaterial(physMat_object, physMat_object, {
+                friction: 0.65, restitution: 0.15
+            }));
+            // Car ↔ ground: low rolling resistance
+            physicsWorld.addContactMaterial(new CANNON.ContactMaterial(physMat_car, physMat_ground, {
+                friction: 0.55, restitution: 0.0
+            }));
+
+            const safetyFloor = new CANNON.Body({ mass: 0, material: physMat_ground });
+            safetyFloor.addShape(new CANNON.Plane());
+            safetyFloor.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+            safetyFloor.position.set(0, -50, 0);
+            physicsWorld.addBody(safetyFloor);
+
+            // Collider for the visible sand ground disk, so props that roll or get
+            // knocked off the mat land on top of the ground instead of falling through
+            // it and appearing to sink into the island terrain.
+            const groundCollider = new CANNON.Body({ mass: 0, material: physMat_ground });
+            groundCollider.addShape(new CANNON.Plane());
+            groundCollider.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+            groundCollider.position.set(0, 0, 0);
+            physicsWorld.addBody(groundCollider);
+
+            physicsReady = true;
+            __pendingPhysicsRegistrations.forEach(fn => fn());
+            __pendingPhysicsRegistrations.length = 0;
+        }
+        window.addEventListener('cannon-es-ready', tryInitPhysics);
+        if (window.CANNON) tryInitPhysics();
+
+        // Props larger than this (in the XZ plane) are treated as environment/boundary
+        // geometry rather than obstacles the car should be blocked by (e.g. the huge
+        // island boundary ring), so they're excluded from car-vs-prop overlap checks.
+        const LOCKED_PROP_RADIUS_CAP = 50;
+
+        function createDebugCollider(body, color = 0x00ff00) {
+            if (!SHOW_COLLIDER_DEBUG || !debugColliderGroup) return;
+            
+            const shape = body.shapes[0];
+            if (!shape) return;
+            
+            let geometry;
+            if (shape instanceof CANNON.Box) {
+                geometry = new THREE.BoxGeometry(
+                    shape.halfExtents.x * 2,
+                    shape.halfExtents.y * 2,
+                    shape.halfExtents.z * 2
+                );
+            } else if (shape instanceof CANNON.Sphere) {
+                geometry = new THREE.SphereGeometry(shape.radius, 16, 16);
+            } else if (shape instanceof CANNON.Cylinder) {
+                geometry = new THREE.CylinderGeometry(shape.radiusTop, shape.radiusBottom, shape.height, 16);
+            } else {
+                return;  // Unsupported shape type
+            }
+            
+            const wireframe = new THREE.WireframeGeometry(geometry);
+            const line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({ color, linewidth: 2 }));
+            line.position.copy(body.position);
+            line.quaternion.copy(body.quaternion);
+            line.userData.body = body;  // Link back to body for updates
+            debugColliderGroup.add(line);
+        }
+
+        function updateDebugColliders() {
+            if (!SHOW_COLLIDER_DEBUG || !debugColliderGroup) return;
+            
+            let mismatchCount = 0;
+            debugColliderGroup.children.forEach(line => {
+                const body = line.userData.body;
+                if (body) {
+                    line.position.copy(body.position);
+                    line.quaternion.copy(body.quaternion);
+                    
+                    // FIX #5: Check for mesh-collider mismatch
+                    const po = physicsObjects.find(p => p.body === body);
+                    if (po && po.obj) {
+                        const meshDist = po.obj.position.distanceTo(body.position);
+                        
+                        // If mesh and body are misaligned by more than 0.01 units, highlight in red
+                        if (meshDist > 0.01) {
+                            line.material.color.setHex(0xff0000);  // Red = mismatch
+                            line.material.linewidth = 3;
+                            mismatchCount++;
+                            
+                            // FIX #6: Log mismatches for debugging (sample every 30 frames)
+                            if (Math.random() < 0.01) {
+                                console.warn(`[Physics] Mesh-collider desync: ${po.body.__debugName || 'unknown'}`,
+                                    `Distance: ${meshDist.toFixed(4)}u`,
+                                    `Mesh: (${po.obj.position.x.toFixed(2)}, ${po.obj.position.y.toFixed(2)}, ${po.obj.position.z.toFixed(2)})`,
+                                    `Body: (${body.position.x.toFixed(2)}, ${body.position.y.toFixed(2)}, ${body.position.z.toFixed(2)})`
+                                );
+                            }
+                        } else {
+                            line.material.color.setHex(0x00ff00);  // Green = aligned
+                            line.material.linewidth = 1;
+                        }
+                    }
+                }
+            });
+            
+            // Log summary if mismatches exist
+            if (mismatchCount > 0 && Math.random() < 0.001) {
+                console.log(`[Physics] ${mismatchCount} collider mismatches detected`);
+            }
+        }
+
+        function makePhysicsBody(object3D, mass, opts) {
+            opts = opts || {};
+            const register = () => {
+                const CANNON = window.CANNON;
+                
+                // Critical: Ensure the mesh is at the world origin of its geometry
+                const bbox = new THREE.Box3().setFromObject(object3D);
+                const size = new THREE.Vector3();
+                bbox.getSize(size);
+                const center = new THREE.Vector3();
+                bbox.getCenter(center);
+                
+                if (size.x < 0.0001 || size.y < 0.0001 || size.z < 0.0001) return;
+
+                // Step 1: Normalize the mesh so its pivot is at its geometric center
+                let physObj = object3D;
+                const posDelta = object3D.position.clone().sub(center);
+                const maxDim = Math.max(size.x, size.y, size.z, 0.001);
+                
+                // If mesh origin is offset from center, wrap it
+                if (posDelta.length() > 0.02 * maxDim) {
+                    const wrapper = new THREE.Group();
+                    wrapper.position.copy(center);
+                    const parent = object3D.parent || scene;
+                    parent.add(wrapper);
+                    object3D.position.sub(center);
+                    wrapper.add(object3D);
+                    physObj = wrapper;
+                }
+
+                // Step 2: Create collider that TIGHTLY matches mesh dimensions
+                // NO shrinking for dynamic objects - use 99.5% of actual size for numerical stability
+                const effectiveMass = (mass && mass > 0) ? mass : 0;
+                const isDynamic = effectiveMass > 0;
+                const shrinkFactor = isDynamic ? 0.995 : 1.0;  // Dynamic: tight fit, Static: full size
+                
+                let shape;
+                if (isDynamic && opts.useCapsule) {
+                    // Use capsule for elongated objects (pencils, screwdrivers, etc.)
+                    const radius = Math.min(size.x, size.z) / 2 * 0.95;
+                    const height = size.y * 0.95;
+                    shape = new CANNON.Cylinder(radius, radius, height, 12);
+                } else {
+                    // Use box collider that matches actual mesh size
+                    shape = new CANNON.Box(new CANNON.Vec3(
+                        Math.max(size.x / 2, 0.01) * shrinkFactor,
+                        Math.max(size.y / 2, 0.01) * shrinkFactor,
+                        Math.max(size.z / 2, 0.01) * shrinkFactor
+                    ));
+                }
+
+                // Step 3: Create rigid body positioned at mesh center
+                const body = new CANNON.Body({
+                    mass: effectiveMass,
+                    type: isDynamic ? CANNON.Body.DYNAMIC : CANNON.Body.STATIC,
+                    shape: shape,
+                    material: physMat_object,
+                    position: new CANNON.Vec3(center.x, center.y, center.z),
+                    // Better damping for smooth settling
+                    linearDamping: isDynamic ? 0.25 : 0,
+                    angularDamping: isDynamic ? 0.55 : 0,
+                    allowSleep: true,
+                    sleepSpeedLimit: 0.01,
+                    sleepTimeLimit: 1.5
+                });
+                
+                // Critical physics properties
+                body.friction = isDynamic ? 0.95 : 0;
+                body.restitution = isDynamic ? 0.08 : 0;
+                body.linearDamping = isDynamic ? 0.25 : 0;
+                body.angularDamping = isDynamic ? 0.55 : 0;
+                
+                // Enhanced CCD for moving objects
+                if (isDynamic) {
+                    body.ccdSpeedThreshold = 0.3;
+                    body.ccdSweptSphereRadius = Math.min(size.x, size.y, size.z) * 0.45;
+                }
+                
+                if (physObj.quaternion) {
+                    body.quaternion.set(physObj.quaternion.x, physObj.quaternion.y, 
+                                      physObj.quaternion.z, physObj.quaternion.w);
+                }
+
+                body.sleep();
+                body.__restY = center.y;
+                body.__initialPos = new CANNON.Vec3(center.x, center.y, center.z);
+                body.__initialQuat = body.quaternion.clone();
+                body.__isDynamic = isDynamic;
+                body.__meshSize = size.clone();
+                body.__halfHeight = size.y / 2;
+                body.__meshObject = object3D;
+                body.__physicsObject = physObj;
+                body.__lastSyncDist = 0;
+
+                const planarRadius = Math.hypot(shape.halfExtents.x, shape.halfExtents.z);
+                body.__isObstacle = !!opts.isObstacle;
+                if (opts.isObstacle && planarRadius < LOCKED_PROP_RADIUS_CAP) {
+                    body.__lockedProp = true;
+                    body.__propRadius = planarRadius;
+                    body.__halfX = shape.halfExtents.x;
+                    body.__halfZ = shape.halfExtents.z;
+                }
+                body.__debugName = (opts.debugName || object3D.name || object3D.type || 'unnamed');
+
+                physicsWorld.addBody(body);
+                physicsObjects.push({ body, obj: physObj });
+                
+                // Add debug collider wireframe
+                if (SHOW_COLLIDER_DEBUG) {
+                    createDebugCollider(body, 0x00ff00);
+                }
+            };
+
+            if (physicsReady) register();
+            else __pendingPhysicsRegistrations.push(register);
+        }
+
+        // Returns true if a given physics-body entry should never be treated as
+        // an obstacle for the car. Two layers of protection:
+        //   1) Whitelist: makePhysicsBody() only sets body.__isObstacle = true
+        //      for actual track obstacles (cones, tire stacks, oil barrels,
+        //      ramps/track pieces). Everything else (decorative desk props,
+        //      the boundary ring, etc.) is excluded here purely because it was
+        //      never marked as a real obstacle in the first place.
+        //   2) Defensive, name/reference-based checks below, kept as a second
+        //      line of defense in case a real obstacle ever ends up parented
+        //      under, or is a reference to, the car / mat / floor / spawn
+        //      platform / kit model.
+        function isExcludedFromCarCollision(entry) {
+            if (!entry) return true;
+            const obj = entry.obj;
+            const b = entry.body;
+            if (!obj) return true;
+            // (1) Whitelist check: not flagged as a real obstacle -> excluded.
+            if (!b.__isObstacle) return true;
+            // (2) carGroup / any descendant of carGroup / the car itself.
+            if (carGroup && (obj === carGroup || obj === carInnerModel)) return true;
+            // (3) mat / ground / floor / spawn platform.
+            if (mattModel && obj === mattModel) return true;
+            if (entry.body === matPhysicsBody) return true;
+            // (4) kit model (and anything parented under it).
+            if (kitGroup && obj === kitGroup) return true;
+            let p = obj.parent;
+            while (p) {
+                if (p === kitGroup || p === mattModel || p === carGroup) return true;
+                p = p.parent;
+            }
+            // (5) Name-based fallback in case any of the above references are
+            // unavailable for some reason (e.g. loaded/renamed dynamically).
+            const nm = (obj.name || '').toLowerCase();
+            if (nm.includes('mat') || nm.includes('ground') || nm.includes('floor') || nm.includes('spawn') || nm.includes('platform') || nm.includes('kit')) return true;
+            // (6) Invisible helper meshes / colliders should never block either.
+            if (obj.visible === false) return true;
+            return false;
+        }
+
+        // Highlights the currently-blocking object bright red + semi-transparent
+        // so it's trivial to spot in the scene while debugging, and restores the
+        // previous highlight (if any) once it's no longer the blocker.
+        function highlightBlockingObject(obj) {
+            if (__debugHighlighted && __debugHighlighted.object !== obj) {
+                clearBlockingHighlight();
+            }
+            if (!obj || __debugHighlighted) return;
+            const originals = [];
+            obj.traverse(n => {
+                if (n.isMesh && n.material) {
+                    const mats = Array.isArray(n.material) ? n.material : [n.material];
+                    mats.forEach(m => originals.push({ mesh: n, mat: m, color: m.color ? m.color.clone() : null, opacity: m.opacity, transparent: m.transparent }));
+                    mats.forEach(m => {
+                        if (m.color) m.color.setHex(0xff0000);
+                        m.transparent = true;
+                        m.opacity = 0.45;
+                        m.needsUpdate = true;
+                    });
+                }
+            });
+            __debugHighlighted = { object: obj, originals };
+        }
+        function clearBlockingHighlight() {
+            if (!__debugHighlighted) return;
+            __debugHighlighted.originals.forEach(o => {
+                if (o.color) o.mat.color.copy(o.color);
+                o.mat.opacity = o.opacity;
+                o.mat.transparent = o.transparent;
+                o.mat.needsUpdate = true;
+            });
+            __debugHighlighted = null;
+        }
+
+        // Finds the first REAL obstacle (if any) whose box overlaps the car's
+        // footprint at (x, z), skipping anything excluded above. Used both to
+        // keep the car from ever spawning inside a collider and to drive the
+        // normal per-frame movement collision checks.
+        function findOverlappingObstacle(x, z, carRadius) {
+            for (let i = 0; i < physicsObjects.length; i++) {
+                const entry = physicsObjects[i];
+                const b = entry.body;
+                if (!b.__lockedProp) continue;
+                if (isExcludedFromCarCollision(entry)) continue;
+
+                // Distance-based spawn safety net: ignore any obstacle whose
+                // center is still within spawnExclusionRadius of the point the
+                // car last spawned/respawned at, no matter how long the car has
+                // been sitting there. Real obstacles scattered further out on
+                // the track are unaffected.
+                const distFromSpawn = Math.hypot(b.position.x - carSpawnCenter.x, b.position.z - carSpawnCenter.z);
+                if (distFromSpawn < spawnExclusionRadius) continue;
+
+                let halfX = (b.__halfX !== undefined ? b.__halfX : b.__propRadius) + carRadius;
+                let halfZ = (b.__halfZ !== undefined ? b.__halfZ : b.__propRadius) + carRadius;
+
+                // Sanity check: if this collider's footprint is wildly larger
+                // than the mat itself, it's almost certainly a stale/oversized
+                // collider rather than a real obstacle footprint. Recompute it
+                // directly from the live mesh geometry instead of trusting the
+                // manually-assigned collider size.
+                const matSpan = matBounds ? Math.max(matBounds.maxX - matBounds.minX, matBounds.maxZ - matBounds.minZ) : Infinity;
+                if ((halfX * 2 > matSpan || halfZ * 2 > matSpan) && entry.obj) {
+                    const freshBox = new THREE.Box3().setFromObject(entry.obj);
+                    const freshSize = new THREE.Vector3(); freshBox.getSize(freshSize);
+                    halfX = freshSize.x / 2 + carRadius;
+                    halfZ = freshSize.z / 2 + carRadius;
+                    if (CAR_DEBUG) {
+                        console.log('Recomputed oversized collider for', b.__debugName, freshBox.min, freshBox.max);
+                    }
+                }
+
+                if (Math.abs(x - b.position.x) < halfX && Math.abs(z - b.position.z) < halfZ) {
+                    const obj = entry.obj;
+                    const box = obj ? new THREE.Box3().setFromObject(obj) : null;
+                    if (CAR_DEBUG) {
+                        console.log('--- Obstacle collision debug (obstacle#' + i + ') ---');
+                        console.log('object.name:', obj ? obj.name : '(none)');
+                        console.log('object.uuid:', obj ? obj.uuid : '(none)');
+                        console.log('object.parent.name:', obj && obj.parent ? obj.parent.name : '(none)');
+                        console.log('object.userData:', obj ? obj.userData : {});
+                        console.log('collider size:', { halfX, halfZ });
+                        console.log('collider position:', b.position);
+                        if (box) console.log('collider bounding box:', box.min, box.max);
+                        console.log('Blocking object:', b.__debugName);
+                        if (box) console.log(box.min, box.max);
+                    }
+                    if (obj) highlightBlockingObject(obj);
+                    return { body: b, halfX, halfZ, name: b.__debugName || (entry.obj && entry.obj.name) || 'obstacle#' + i };
+                }
+            }
+            clearBlockingHighlight();
+            return null;
+        }
+
+        // Requirement: "Never allow the car to spawn inside another object's
+        // collider" + "automatically push the car outside any overlapping object
+        // if it spawned inside one" / "move it to the nearest free position".
+        // Nudges (x, z) directly away from any overlapping obstacle(s), clamped
+        // to stay on the mat, until the position is clear (or a safety cap of
+        // iterations is hit so this can never loop forever).
+        function resolveSpawnPosition(x, z, carRadius, matRadius) {
+            // matRadius (the true, un-shrunk car footprint) governs how close the
+            // car may sit to the mat edge; carRadius (which may be intentionally
+            // smaller) only governs how it avoids overlapping obstacles. Falls
+            // back to carRadius if no separate value is given.
+            if (matRadius === undefined) matRadius = carRadius;
+            let px = x, pz = z;
+            for (let iter = 0; iter < 12; iter++) {
+                const hit = findOverlappingObstacle(px, pz, carRadius);
+                if (!hit) break;
+                let dx = px - hit.body.position.x;
+                let dz = pz - hit.body.position.z;
+                let len = Math.hypot(dx, dz);
+                if (len < 0.0001) { // dead-center overlap: pick an arbitrary escape direction
+                    const ang = Math.random() * Math.PI * 2;
+                    dx = Math.cos(ang); dz = Math.sin(ang); len = 1;
+                }
+                dx /= len; dz /= len;
+                // Push just past the obstacle's edge along that axis, plus a small buffer.
+                const pushDist = Math.max(hit.halfX, hit.halfZ) + 0.25;
+                px = hit.body.position.x + dx * pushDist;
+                pz = hit.body.position.z + dz * pushDist;
+                if (matBounds) {
+                    px = THREE.MathUtils.clamp(px, matBounds.minX + matRadius, matBounds.maxX - matRadius);
+                    pz = THREE.MathUtils.clamp(pz, matBounds.minZ + matRadius, matBounds.maxZ - matRadius);
+                }
+            }
+            if (matBounds) {
+                px = THREE.MathUtils.clamp(px, matBounds.minX + matRadius, matBounds.maxX - matRadius);
+                pz = THREE.MathUtils.clamp(pz, matBounds.minZ + matRadius, matBounds.maxZ - matRadius);
+            }
+            return { x: px, z: pz };
+        }
+
+        // Puts every physics-enabled prop (paint tins, bottles, tools, eraser, track
+        // pieces, etc.) back exactly where it started, at rest, with zero velocity.
+        function resetPhysicsPropsToStart() {
+            physicsObjects.forEach(po => {
+                const b = po.body;
+                if (!b.__initialPos) return;
+                b.wakeUp();
+                b.position.set(b.__initialPos.x, b.__initialPos.y, b.__initialPos.z);
+                if (b.__initialQuat) {
+                    b.quaternion.set(b.__initialQuat.x, b.__initialQuat.y, b.__initialQuat.z, b.__initialQuat.w);
+                }
+                b.velocity.set(0, 0, 0);
+                b.angularVelocity.set(0, 0, 0);
+                // Sync Three.js object immediately so it snaps back visually
+                if (po.obj) {
+                    po.obj.position.set(b.__initialPos.x, b.__initialPos.y, b.__initialPos.z);
+                    if (b.__initialQuat) {
+                        po.obj.quaternion.set(b.__initialQuat.x, b.__initialQuat.y, b.__initialQuat.z, b.__initialQuat.w);
+                    }
+                }
+                b.sleep();
+            });
+        }
+
+        // (Keyboard listeners consolidated at the top of the file — see the single
+        // keydown/keyup handlers near the `keys` object declaration. Do not add
+        // another pair here; duplicate listeners were previously a source of bugs.)
+
+        const ambientLight = new THREE.AmbientLight(0x1a2340, 0.35);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xdfe6ff, 0.85);
+        dirLight.position.set(0, 100, 80);  // Centered light position
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 8192;  // Increased from 4096 for full coverage
+        dirLight.shadow.mapSize.height = 8192;  // Increased from 4096 for full coverage
+        dirLight.shadow.camera.near = 0.5;
+        dirLight.shadow.camera.far = 500;
+        dirLight.shadow.radius = 20;  // Increased from 6 for larger, softer shadows
+        dirLight.shadow.bias = -0.0004;
+        const d = 400;  // Increased from 200 to cover FULL map
+        dirLight.shadow.camera.left = -d;
+        dirLight.shadow.camera.right = d;
+        dirLight.shadow.camera.top = d;
+        dirLight.shadow.camera.bottom = -d;
+        scene.add(dirLight);
+
+        const fillLight = new THREE.DirectionalLight(0x88a0e0, 0.22);
+        fillLight.position.set(90, 35, 10);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0x6f8fff, 0.35);
+        rimLight.position.set(-15, 45, -140);
+        scene.add(rimLight);
+
+        const hemiLight = new THREE.HemisphereLight(0x1c2c55, 0x05081c, 0.3);
+        scene.add(hemiLight);
+
+        function fixMetalMaterial(node) {
+            if (!node.isMesh || !node.material) return;
+            const mats = Array.isArray(node.material) ? node.material : [node.material];
+            mats.forEach(m => {
+                if (!m) return;
+                if (m.metalness > 0.3) {
+                    if (m.roughness < 0.2) m.roughness = 0.2;
+                    m.envMapIntensity = 1.5;
+                    m.needsUpdate = true;
+                }
+            });
+        }
+        function fixMetalTraverse(root) {
+            root.traverse(fixMetalMaterial);
+        }
+
+        function createEnvironmentTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 0, 256);
+            grad.addColorStop(0, '#050d26');
+            grad.addColorStop(0.42, '#0b1c4a');
+            grad.addColorStop(0.5, PALETTE.waterTop);
+            grad.addColorStop(0.58, '#040a20');
+            grad.addColorStop(1, '#01040f');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 256);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.mapping = THREE.EquirectangularReflectionMapping;
+            tex.needsUpdate = true;
+            return tex;
+        }
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+        const envTexture = createEnvironmentTexture();
+        const envRenderTarget = pmremGenerator.fromEquirectangular(envTexture);
+        scene.environment = envRenderTarget.texture;
+        envTexture.dispose();
+        pmremGenerator.dispose();
+
+        const backgroundTexture = createEnvironmentTexture();
+        scene.background = backgroundTexture;
+
+        function createContactShadowTexture() {
+            const s = 256;
+            const c = document.createElement('canvas');
+            c.width = s; c.height = s;
+            const ctx = c.getContext('2d');
+            const grad = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+            grad.addColorStop(0, 'rgba(0,0,0,0.38)');
+            grad.addColorStop(0.55, 'rgba(0,0,0,0.20)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, s, s);
+            const tex = new THREE.CanvasTexture(c);
+            tex.needsUpdate = true;
+            return tex;
+        }
+        const contactShadowTex = createContactShadowTexture();
+
+        function addContactShadow(x, y, z, radius) {
+            const geo = new THREE.CircleGeometry(radius, 32);
+            const mat = new THREE.MeshBasicMaterial({
+                map: contactShadowTex,
+                transparent: true,
+                depthWrite: false,
+                opacity: 0.9
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.set(x, y + 0.015, z);
+            mesh.renderOrder = 1;
+            scene.add(mesh);
+            return mesh;
+        }
+
+        // Reduced island radius for a smaller island and thinner border
+        const radius = 260;
+        const segments = 64;
+        const groundGeo = new THREE.CircleGeometry(radius, segments);
+
+        // Make the shoreline/border subtler
+        const boundaryHeight = 12;
+        const boundaryThickness = 6;
+        const boundaryGeo = new THREE.CylinderGeometry(radius + boundaryThickness, radius + boundaryThickness, boundaryHeight, 64, 1, true);
+        const boundaryMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide });
+        const boundaryMesh = new THREE.Mesh(boundaryGeo, boundaryMat);
+        boundaryMesh.position.y = 0;
+        scene.add(boundaryMesh);
+        makePhysicsBody(boundaryMesh, 0, { isObstacle: false, debugName: 'island-boundary' });
+
+        function createSandTexture() {
+            const s = 512;
+            const c = document.createElement('canvas');
+            c.width = s; c.height = s;
+            const ctx = c.getContext('2d');
+
+            ctx.fillStyle = PALETTE.sand;
+            ctx.fillRect(0, 0, s, s);
+
+            ctx.strokeStyle = 'rgba(169, 122, 46, 0.4)';
+            ctx.lineWidth = 1;
+            const gridSize = 32;
+            for (let x = 0; x <= s; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, s); ctx.stroke();
+            }
+            for (let y = 0; y <= s; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(s, y + 0.5); ctx.stroke();
+            }
+
+            for (let i = 0; i < 40; i++) {
+                const x = Math.random() * s, y = Math.random() * s;
+                const r = 30 + Math.random() * 70;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                const tone = Math.random() > 0.5 ? 'rgba(169,122,46,0.16)' : 'rgba(120,85,30,0.2)';
+                grad.addColorStop(0, tone); grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+            }
+
+            for (let i = 0; i < 6000; i++) {
+                const x = Math.random() * s, y = Math.random() * s;
+                const shade = Math.random();
+                ctx.fillStyle = shade > 0.5
+                    ? 'rgba(169, 122, 46, ' + (0.08 + Math.random() * 0.1) + ')'
+                    : 'rgba(120, 85, 30, ' + (0.1 + Math.random() * 0.12) + ')';
+                ctx.fillRect(x, y, 1, 1);
+            }
+
+            const tex = new THREE.CanvasTexture(c);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(18, 18);
+            tex.needsUpdate = true;
+            return tex;
+        }
+
+        const groundMat = new THREE.MeshStandardMaterial({
+            color: PALETTE.sand,
+            map: createSandTexture(),
+            roughness: 0.55,
+            metalness: 0.05,
+            envMapIntensity: 0.4,
+            side: THREE.DoubleSide
+        });
+
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.castShadow = true;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        function createRadialGlowTexture() {
+            const s = 512;
+            const c = document.createElement('canvas');
+            c.width = s; c.height = s;
+            const ctx = c.getContext('2d');
+            const grad = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+            grad.addColorStop(0, 'rgba(50, 90, 220, 0.35)');
+            grad.addColorStop(0.45, 'rgba(20, 45, 150, 0.16)');
+            grad.addColorStop(1, 'rgba(0, 4, 40, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, s, s);
+            const tex = new THREE.CanvasTexture(c);
+            tex.needsUpdate = true;
+            return tex;
+        }
+        const centerGlowGeo = new THREE.CircleGeometry(radius * 0.55, 64);
+        const centerGlowMat = new THREE.MeshBasicMaterial({
+            map: createRadialGlowTexture(),
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+        const centerGlow = new THREE.Mesh(centerGlowGeo, centerGlowMat);
+        centerGlow.rotation.x = -Math.PI / 2;
+        centerGlow.position.y = 0.01;
+        scene.add(centerGlow);
+
+        function createWaterGradientTexture() {
+            const w = 8, h = 256;
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, PALETTE.waterTop);
+            grad.addColorStop(0.5, PALETTE.waterMid);
+            grad.addColorStop(1, PALETTE.waterBottom);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+            const tex = new THREE.CanvasTexture(c);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.ClampToEdgeWrapping;
+            tex.needsUpdate = true;
+            return tex;
+        }
+
+        const waterGroundGeo = new THREE.PlaneGeometry(3000, 3000);
+        const waterGroundMat = new THREE.MeshPhysicalMaterial({
+            color: PALETTE.waterMid,
+            map: createWaterGradientTexture(),
+            roughness: 0.12,
+            metalness: 0.1,
+            clearcoat: 0.6,
+            clearcoatRoughness: 0.15,
+            envMapIntensity: 1.1,
+            side: THREE.DoubleSide
+        });
+        const waterGround = new THREE.Mesh(waterGroundGeo, waterGroundMat);
+        waterGround.rotation.x = -Math.PI / 2;
+        waterGround.position.y = -5;
+        waterGround.receiveShadow = true;
+        scene.add(waterGround);
+
+        const waterInnerRadius = radius * 0.85;
+        const waterOuterRadius = radius * 1.25;
+        const waterThetaSegments = 160;
+        const waterPhiSegments = 28;
+        const waterGeo = new THREE.RingGeometry(waterInnerRadius, waterOuterRadius, waterThetaSegments, waterPhiSegments);
+        const waterMat = new THREE.MeshPhysicalMaterial({
+            color: PALETTE.waterMid,
+            map: createWaterGradientTexture(),
+            roughness: 0.06,
+            metalness: 0.08,
+            clearcoat: 0.7,
+            clearcoatRoughness: 0.1,
+            envMapIntensity: 1.3,
+            transparent: true,
+            transmission: 0.05,
+            opacity: 0.97,
+            ior: 1.33,
+            side: THREE.DoubleSide
+        });
+        const water = new THREE.Mesh(waterGeo, waterMat);
+        water.rotation.x = -Math.PI / 2;
+        water.position.y = -1.4;
+        water.receiveShadow = true;
+        scene.add(water);
+
+        const waterPosAttr = waterGeo.attributes.position;
+        const waterBaseY = new Float32Array(waterPosAttr.count);
+        for (let i = 0; i < waterPosAttr.count; i++) waterBaseY[i] = waterPosAttr.getZ(i);
+
+        function createFoamTexture() {
+            const s = 256;
+            const c = document.createElement('canvas');
+            c.width = s; c.height = s;
+            const ctx = c.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 0, s);
+            grad.addColorStop(0, 'rgba(200,215,255,0)');
+            grad.addColorStop(0.45, 'rgba(200,215,255,0.45)');
+            grad.addColorStop(0.6, 'rgba(200,215,255,0.3)');
+            grad.addColorStop(1, 'rgba(200,215,255,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, s, s);
+            for (let i = 0; i < 400; i++) {
+                const x = Math.random() * s, y = s * (0.35 + Math.random() * 0.3);
+                ctx.fillStyle = 'rgba(200,215,255,' + (0.1 + Math.random() * 0.2) + ')';
+                ctx.beginPath(); ctx.arc(x, y, 1 + Math.random() * 2, 0, Math.PI * 2); ctx.fill();
+            }
+            const tex = new THREE.CanvasTexture(c);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.ClampToEdgeWrapping;
+            tex.repeat.set(24, 1);
+            tex.needsUpdate = true;
+            return tex;
+        }
+
+        const foamGeo = new THREE.RingGeometry(radius * 0.96, radius * 1.08, 128);
+        const foamMat = new THREE.MeshBasicMaterial({
+            map: createFoamTexture(),
+            transparent: true,
+            opacity: 0.5,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
+        const foamRing = new THREE.Mesh(foamGeo, foamMat);
+        foamRing.rotation.x = -Math.PI / 2;
+        foamRing.position.y = -0.08;
+        scene.add(foamRing);
+
+        const loader = new THREE.GLTFLoader();
+        
+        // Add error logging for all load attempts
+        const origLoad = loader.load.bind(loader);
+        loader.load = function(url, onLoad, onProgress, onError) {
+            console.log('Attempting to load:', url);
+            return origLoad(url, onLoad, onProgress, function(error) {
+                console.error('Failed to load ' + url + ':', error);
+                if (onError) onError(error);
+            });
+        };
+
+        function createTinLabelTexture(colorHex, name) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#f3f1ea';
+            ctx.fillRect(0, 0, 256, 256);
+            const hex = '#' + colorHex.toString(16).padStart(6, '0');
+            ctx.fillStyle = hex;
+            ctx.fillRect(0, 0, 256, 14);
+            ctx.fillRect(0, 242, 256, 14);
+            ctx.fillRect(0, 168, 256, 50);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 30px Georgia, serif';
+            ctx.fillText('Humbrol', 128, 70);
+            ctx.font = 'italic 20px Georgia, serif';
+            ctx.fillText('Enamel', 128, 100);
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(name.toUpperCase(), 128, 198);
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#444';
+            ctx.fillText('14ml  Made in UK', 128, 228);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.needsUpdate = true;
+            tex.anisotropy = 4;
+            return tex;
+        }
+
+        function createPaintTin(colorHex, name, radius, height) {
+            const group = new THREE.Group();
+            const labelTex = createTinLabelTexture(colorHex, name);
+
+            const bodyGeo = new THREE.CylinderGeometry(radius, radius, height, 32);
+            const bodyMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.5, metalness: 0.25 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = height / 2;
+            body.castShadow = true; body.receiveShadow = true;
+            group.add(body);
+
+            const lidGeo = new THREE.CylinderGeometry(radius * 0.95, radius * 0.95, height * 0.1, 32);
+            const lidMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.35, metalness: 0.4 });
+            const lid = new THREE.Mesh(lidGeo, lidMat);
+            lid.position.y = height + height * 0.05;
+            lid.castShadow = true; lid.receiveShadow = true;
+            group.add(lid);
+
+            const rimGeo = new THREE.TorusGeometry(radius * 0.97, radius * 0.05, 8, 24);
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xd8d8d8, roughness: 0.25, metalness: 0.85 });
+            const rim = new THREE.Mesh(rimGeo, rimMat);
+            rim.rotation.x = Math.PI / 2;
+            rim.position.y = height + height * 0.1;
+            rim.castShadow = true; rim.receiveShadow = true;
+            group.add(rim);
+
+            const baseRimGeo = new THREE.CylinderGeometry(radius * 1.0, radius * 1.0, height * 0.05, 32);
+            const baseRimMat = new THREE.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.4, metalness: 0.7 });
+            const baseRim = new THREE.Mesh(baseRimGeo, baseRimMat);
+            baseRim.position.y = height * 0.025;
+            baseRim.castShadow = true; baseRim.receiveShadow = true;
+            group.add(baseRim);
+
+            group.userData.footHeight = height;
+            fixMetalTraverse(group);
+            return group;
+        }
+
+        function createPaintBottle(colorHex, radius, height) {
+            const group = new THREE.Group();
+            const bodyGeo = new THREE.CylinderGeometry(radius, radius * 1.12, height, 24);
+            const bodyMat = new THREE.MeshPhysicalMaterial({
+                color: colorHex, roughness: 0.12, metalness: 0.0, transmission: 0.55, transparent: true, opacity: 0.92, thickness: 0.5
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = height / 2;
+            body.castShadow = true; body.receiveShadow = true;
+            group.add(body);
+
+            const neckGeo = new THREE.CylinderGeometry(radius * 0.45, radius * 0.6, height * 0.18, 16);
+            const neck = new THREE.Mesh(neckGeo, bodyMat);
+            neck.position.y = height + height * 0.09;
+            neck.castShadow = true; neck.receiveShadow = true;
+            group.add(neck);
+
+            const capGeo = new THREE.CylinderGeometry(radius * 0.55, radius * 0.55, height * 0.22, 16);
+            const capMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.45, metalness: 0.1 });
+            const cap = new THREE.Mesh(capGeo, capMat);
+            cap.position.y = height + height * 0.18 + height * 0.11;
+            cap.castShadow = true; cap.receiveShadow = true;
+            group.add(cap);
+
+            group.userData.footHeight = height;
+            fixMetalTraverse(group);
+            return group;
+        }
+
+        // --- Procedural track obstacles: traffic cones, tire stacks, oil barrels ---
+        function createTrafficCone(scale) {
+            scale = scale || 1;
+            const group = new THREE.Group();
+            const h = 1.1 * scale, rBase = 0.42 * scale, rTip = 0.045 * scale;
+
+            const bodyGeo = new THREE.CylinderGeometry(rTip, rBase, h, 20);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff5b1f, roughness: 0.55, metalness: 0.05 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = h / 2;
+            body.castShadow = true; body.receiveShadow = true;
+            group.add(body);
+
+            const stripeMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f4, roughness: 0.5, metalness: 0.05 });
+            [0.42, 0.66].forEach(t => {
+                const rr = THREE.MathUtils.lerp(rBase, rTip, t) * 1.03;
+                const stripeGeo = new THREE.CylinderGeometry(rr, rr * 1.12, h * 0.11, 20, 1, true);
+                const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+                stripe.position.y = h * t;
+                stripe.castShadow = true; stripe.receiveShadow = true;
+                group.add(stripe);
+            });
+
+            const baseGeo = new THREE.BoxGeometry(rBase * 2.05, h * 0.12, rBase * 2.05);
+            const base = new THREE.Mesh(baseGeo, bodyMat);
+            base.position.y = h * 0.06;
+            base.castShadow = true; base.receiveShadow = true;
+            group.add(base);
+
+            group.userData.footHeight = 0;
+            return group;
+        }
+
+        function createTireStack(scale, count) {
+            scale = scale || 1;
+            count = count || 3;
+            const group = new THREE.Group();
+            const rOuter = 0.55 * scale, rInner = 0.28 * scale, tireH = 0.32 * scale;
+            const tireMat = new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.85, metalness: 0.05 });
+            const sideMat = new THREE.MeshStandardMaterial({ color: 0xe8e8e8, roughness: 0.6, metalness: 0.05 });
+            for (let i = 0; i < count; i++) {
+                const geo = new THREE.CylinderGeometry(rOuter, rOuter, tireH, 24, 1, false);
+                const tire = new THREE.Mesh(geo, tireMat);
+                tire.position.y = tireH * i + tireH / 2;
+                tire.castShadow = true; tire.receiveShadow = true;
+                group.add(tire);
+                const ringGeo = new THREE.TorusGeometry((rOuter + rInner) / 2, (rOuter - rInner) / 2, 8, 24);
+                const ring = new THREE.Mesh(ringGeo, sideMat);
+                ring.rotation.x = Math.PI / 2;
+                ring.position.y = tireH * i + tireH / 2;
+                ring.scale.set(1, 1, 0.12);
+                ring.castShadow = true; ring.receiveShadow = true;
+                group.add(ring);
+            }
+            return group;
+        }
+
+        function createOilBarrel(scale, colorHex) {
+            scale = scale || 1;
+            const group = new THREE.Group();
+            const h = 1.15 * scale, r = 0.42 * scale;
+            const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex || 0x2255cc, roughness: 0.45, metalness: 0.35 });
+            const bandMat = new THREE.MeshStandardMaterial({ color: 0xe8e8e8, roughness: 0.4, metalness: 0.4 });
+
+            const bodyGeo = new THREE.CylinderGeometry(r, r, h, 24);
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = h / 2;
+            body.castShadow = true; body.receiveShadow = true;
+            group.add(body);
+
+            [0.18, 0.5, 0.82].forEach(t => {
+                const bandGeo = new THREE.CylinderGeometry(r * 1.03, r * 1.03, h * 0.07, 24);
+                const band = new THREE.Mesh(bandGeo, bandMat);
+                band.position.y = h * t;
+                band.castShadow = true; band.receiveShadow = true;
+                group.add(band);
+            });
+
+            const capGeo = new THREE.CylinderGeometry(r * 0.98, r * 0.98, h * 0.03, 24);
+            const cap = new THREE.Mesh(capGeo, bandMat);
+            cap.position.y = h + h * 0.015;
+            cap.castShadow = true; cap.receiveShadow = true;
+            group.add(cap);
+
+            fixMetalTraverse(group);
+            return group;
+        }
+
+        function scatterTrackObstacles(centerX, centerZ, spanX, spanZ, floorY) {
+            const layout = [
+                { type: 'cone', x: 0.30, z: 0.62 },
+                { type: 'cone', x: 0.36, z: 0.58 },
+                { type: 'cone', x: 0.42, z: 0.63 },
+                { type: 'cone', x: 0.48, z: 0.57 },
+                { type: 'cone', x: -0.30, z: 0.60 },
+                { type: 'cone', x: -0.24, z: 0.55 },
+                { type: 'tires', x: -0.02, z: 0.10 },
+                { type: 'tires', x: 0.05, z: -0.42 },
+                { type: 'barrel', x: -0.10, z: -0.05, color: 0x2255cc },
+                { type: 'barrel', x: -0.16, z: -0.02, color: 0xcc2222 },
+                { type: 'barrel', x: -0.13, z: 0.03, color: 0x2255cc },
+                { type: 'cone', x: 0.02, z: -0.60 },
+                { type: 'cone', x: 0.08, z: -0.66 }
+            ];
+
+            const scale = Math.max(Math.min(spanX, spanZ) * 0.028, 0.55);
+
+            obstaclesGroup = new THREE.Group();
+            obstaclesGroup.visible = false; // only shown once Drive mode is entered
+            scene.add(obstaclesGroup);
+
+            layout.forEach((item, idx) => {
+                let obj, mass;
+                if (item.type === 'cone') {
+                    obj = createTrafficCone(scale);
+                    mass = 0.6;
+                    obj.name = 'traffic_cone_' + idx;
+                } else if (item.type === 'tires') {
+                    obj = createTireStack(scale, 3);
+                    mass = 2.5;
+                    obj.name = 'tire_stack_' + idx;
+                } else {
+                    obj = createOilBarrel(scale, item.color);
+                    mass = 3.2;
+                    obj.name = 'oil_barrel_' + idx;
+                }
+
+                const worldX = centerX + item.x * spanX;
+                const worldZ = centerZ + item.z * spanZ;
+                obj.position.set(worldX, floorY, worldZ);
+                obj.rotation.y = Math.random() * Math.PI * 2;
+                obstaclesGroup.add(obj);
+                addContactShadow(worldX, floorY + 0.01, worldZ, scale * (item.type === 'tires' ? 0.75 : 0.55));
+                // Real track obstacles: these ARE meant to block the car.
+                makePhysicsBody(obj, mass, { shrink: 0.88, isObstacle: true, debugName: obj.name });
+            });
+        }
+
+        loader.load('matt.glb', function (gltf) {
+            const model = gltf.scene;
+            model.position.set(0, 0, 0);
+            mattModel = model; // remembered so the car never treats the mat itself as an obstacle
+
+            model.traverse(function (node) {
+                if (node.isMesh) {
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
+            fixMetalTraverse(model);
+            scene.add(model);
+
+            const mattBBox = new THREE.Box3().setFromObject(model);
+            mattTopY = mattBBox.max.y;
+            const mattSize = new THREE.Vector3();
+            mattBBox.getSize(mattSize);
+
+            // World-space drivable area: the car must always stay within these
+            // XZ bounds (its footprint is kept inside this box every frame).
+            matBounds = {
+                minX: mattBBox.min.x,
+                maxX: mattBBox.max.x,
+                minZ: mattBBox.min.z,
+                maxZ: mattBBox.max.z
+            };
+
+            addContactShadow(0, 0.02, 0, mattSize.x * 0.58);
+
+            // ── Add invisible border walls to keep car on island ──
+            const borderHeight = 5;
+            const borderThickness = 2;
+            const borderY = mattTopY + borderHeight / 2;
+            
+            // Create 4 invisible border walls (North, South, East, West)
+            const createBorderWall = (posX, posZ, sizeX, sizeZ) => {
+                const geometry = new THREE.BoxGeometry(sizeX, borderHeight, sizeZ);
+                const material = new THREE.MeshBasicMaterial({ 
+                    transparent: true, 
+                    opacity: 0,  // Invisible
+                    depthWrite: false
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(posX, borderY, posZ);
+                mesh.visible = false;  // Don't render, only physics
+                scene.add(mesh);
+                
+                // Add physics body for collision
+                const registerBorder = () => {
+                    const CANNON = window.CANNON;
+                    const borderBody = new CANNON.Body({ mass: 0, material: physMat_ground });
+                    borderBody.addShape(new CANNON.Box(new CANNON.Vec3(sizeX / 2, borderHeight / 2, sizeZ / 2)));
+                    borderBody.position.set(posX, borderY, posZ);
+                    physicsWorld.addBody(borderBody);
+                };
+                if (physicsReady) registerBorder();
+                else __pendingPhysicsRegistrations.push(registerBorder);
+            };
+            
+            const borderExtend = 2;  // How far beyond mat edges
+            const matMinX = matBounds.minX;
+            const matMaxX = matBounds.maxX;
+            const matMinZ = matBounds.minZ;
+            const matMaxZ = matBounds.maxZ;
+            const matWidth = matMaxX - matMinX;
+            const matDepth = matMaxZ - matMinZ;
+            
+            // North wall (top)
+            createBorderWall(0, matMaxZ + borderExtend, matWidth + borderExtend * 4, borderThickness);
+            
+            // South wall (bottom)
+            createBorderWall(0, matMinZ - borderExtend, matWidth + borderExtend * 4, borderThickness);
+            
+            // East wall (right)
+            createBorderWall(matMaxX + borderExtend, 0, borderThickness, matDepth + borderExtend * 4);
+            
+            // West wall (left)
+            createBorderWall(matMinX - borderExtend, 0, borderThickness, matDepth + borderExtend * 4);
+
+            const registerMatCollider = () => {
+                const CANNON = window.CANNON;
+                matPhysicsBody = new CANNON.Body({ mass: 0, material: physMat_ground });
+                matPhysicsBody.addShape(new CANNON.Box(new CANNON.Vec3(mattSize.x * 0.6, 0.15, mattSize.z * 0.6)));
+                matPhysicsBody.position.set(0, mattTopY - 0.15, 0);
+                physicsWorld.addBody(matPhysicsBody);
+            };
+            if (physicsReady) registerMatCollider();
+            else __pendingPhysicsRegistrations.push(registerMatCollider);
+
+            loader.load('kit.glb', function (kitGltf) {
+                const kit = kitGltf.scene;
+                kit.traverse(function (n) {
+                    if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; }
+                });
+
+                const kitBBox = new THREE.Box3().setFromObject(kit);
+                const kitSize = new THREE.Vector3();
+                kitBBox.getSize(kitSize);
+                const kitCenter = new THREE.Vector3();
+                kitBBox.getCenter(kitCenter);
+
+                kitGroup = new THREE.Group();
+                kit.position.set(-kitCenter.x, -kitCenter.y, -kitCenter.z);
+                kitGroup.add(kit);
+
+                let scale = 1;
+                if (kitSize.x > 0 && kitSize.z > 0) {
+                    const scaleX = (mattSize.x * 0.6) / kitSize.x;
+                    const scaleZ = (mattSize.z * 0.6) / kitSize.z;
+                    scale = Math.min(scaleX, scaleZ);
+                }
+                kitGroup.scale.setScalar(Math.max(scale, 0.25));
+
+                kitTargetSize = new THREE.Vector3(
+                    kitSize.x * kitGroup.scale.x,
+                    kitSize.y * kitGroup.scale.y,
+                    kitSize.z * kitGroup.scale.z
+                );
+
+                kit.traverse(n => {
+                    if (n.isMesh && n.material) {
+                        const applyMat = (m) => {
+                            if (m.color) m.color.setHex(0xffffff);
+                            m.map = null;
+                            m.needsUpdate = true;
+                            if ('roughness' in m) m.roughness = 0.6;
+                            if ('metalness' in m) m.metalness = 0.05;
+                        };
+                        if (Array.isArray(n.material)) n.material.forEach(applyMat);
+                        else applyMat(n.material);
+                    }
+                });
+
+                const scaledHeight = kitSize.y * kitGroup.scale.y;
+                kitGroup.position.set(0, mattTopY + scaledHeight * 0.5 + 0.02, 0);
+
+                scene.add(kitGroup);
+                addContactShadow(kitGroup.position.x, mattTopY + 0.02, kitGroup.position.z, Math.max(kitSize.x, kitSize.z) * kitGroup.scale.x * 0.55);
+
+                scatterTrackObstacles(
+                    kitGroup.position.x, kitGroup.position.z,
+                    kitTargetSize.x, kitTargetSize.z,
+                    mattTopY + 0.02
+                );
+            });
+
+            loader.load('hq_flat_screwdriver.glb', function (gltf) {
+                const model = gltf.scene;
+                model.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                fixMetalTraverse(model);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const size = new THREE.Vector3(); bbox.getSize(size);
+                const center = new THREE.Vector3(); bbox.getCenter(center);
+                const group = new THREE.Group();
+                model.position.set(-center.x, -center.y, -center.z); group.add(model);
+                const scale = Math.min((mattSize.x * 0.28) / size.x, (mattSize.z * 0.28) / size.z);
+                group.scale.setScalar(Math.max(scale, 0.35));
+                group.position.set(-mattSize.x * -0.58, mattTopY + 0.02, -mattSize.z * 0.35);
+                scene.add(group);
+                addContactShadow(group.position.x, mattTopY + 0.02, group.position.z, size.x * group.scale.x * 0.55);
+                group.name = 'screwdriver';
+                // Decorative desk tool, not a real track obstacle: never blocks the car.
+                makePhysicsBody(group, 0.15, { isObstacle: false, debugName: 'screwdriver' });
+            });
+
+            loader.load('long_scissors.glb', function (gltf) {
+                const model = gltf.scene;
+                model.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                fixMetalTraverse(model);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const size = new THREE.Vector3(); bbox.getSize(size);
+                const center = new THREE.Vector3(); bbox.getCenter(center);
+                const group = new THREE.Group();
+                model.position.set(-center.x, -center.y, -center.z); group.add(model);
+                const scale = Math.min((mattSize.x * 0.28) / size.x, (mattSize.z * 0.28) / size.z);
+                group.scale.setScalar(Math.max(scale, 0.35));
+                group.position.set(-mattSize.x * -0.65, mattTopY + 0.02, -mattSize.z * 0.2);
+                scene.add(group);
+                addContactShadow(group.position.x, mattTopY + 0.02, group.position.z, size.x * group.scale.x * 0.55);
+                group.name = 'scissors';
+                makePhysicsBody(group, 0.12, { isObstacle: false, debugName: 'scissors' });
+            });
+
+            loader.load('metal_ruler.glb', function (gltf) {
+                const model = gltf.scene;
+                model.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                fixMetalTraverse(model);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const size = new THREE.Vector3(); bbox.getSize(size);
+                const center = new THREE.Vector3(); bbox.getCenter(center);
+                const group = new THREE.Group();
+                model.position.set(-center.x, -center.y, -center.z); group.add(model);
+                const scale = Math.min((mattSize.x * 0.28) / size.x, (mattSize.z * 0.28) / size.z);
+                group.scale.setScalar(Math.max(scale, 0.55));
+                group.position.set(-mattSize.x * 0.56, mattTopY, -mattSize.z * 0.18);
+                scene.add(group);
+                addContactShadow(group.position.x, mattTopY + 0.02, group.position.z, size.x * group.scale.x * 0.5);
+                group.name = 'metal_ruler';
+                makePhysicsBody(group, 0.22, { isObstacle: false, debugName: 'metal_ruler' });
+            });
+
+            loader.load('plastic_box_cutter.glb', function (gltf) {
+                const model = gltf.scene;
+                model.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                fixMetalTraverse(model);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const size = new THREE.Vector3(); bbox.getSize(size);
+                const center = new THREE.Vector3(); bbox.getCenter(center);
+                const group = new THREE.Group();
+                model.position.set(-center.x, -center.y, -center.z); group.add(model);
+                const scale = Math.min((mattSize.x * 0.28) / size.x, (mattSize.z * 0.28) / size.z);
+                group.scale.setScalar(Math.max(scale, 0.35));
+                group.position.set(mattSize.x * 0. - 15, mattTopY + 0.02, mattSize.z * 0.58);
+                scene.add(group);
+                addContactShadow(group.position.x, mattTopY + 0.02, group.position.z, size.x * group.scale.x * 0.55);
+                group.name = 'box_cutter';
+                makePhysicsBody(group, 0.08, { isObstacle: false, debugName: 'box_cutter' });
+            });
+
+            loader.load('rotring_mechanical_pencil.glb', function (gltf) {
+                const model = gltf.scene;
+                model.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                fixMetalTraverse(model);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const size = new THREE.Vector3(); bbox.getSize(size);
+                const center = new THREE.Vector3(); bbox.getCenter(center);
+                const group = new THREE.Group();
+                model.position.set(-center.x, -center.y, -center.z); group.add(model);
+                const scale = Math.min((mattSize.x * 0.28) / size.x, (mattSize.z * 0.28) / size.z);
+                group.scale.setScalar(Math.max(scale, 0.35));
+                group.position.set(-mattSize.x * 0.10, mattTopY + 0.02, -mattSize.z * 0.45);
+                scene.add(group);
+                addContactShadow(group.position.x, mattTopY + 0.02, group.position.z, size.x * group.scale.x * 0.5);
+                group.name = 'mechanical_pencil';
+                makePhysicsBody(group, 0.05, { isObstacle: false, debugName: 'mechanical_pencil' });
+            });
+
+            // Helper: scale a loaded model uniformly so its LARGEST dimension (x, y or z)
+            // matches a target size. This avoids the runaway-scale bug where a model with
+            // a thin x/z footprint but a tall y dimension (like a loop ramp) got blown up
+            // to a huge size because only the footprint was used to compute scale.
+            function loadTrackPiece(url, targetMaxDim, posX, posZ, staticBody, callback) {
+                loader.load(url, function (gltf) {
+                    const model = gltf.scene;
+                    model.traverse(n => { if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; } });
+                    fixMetalTraverse(model);
+                    const bbox = new THREE.Box3().setFromObject(model);
+                    const size = new THREE.Vector3(); bbox.getSize(size);
+                    const center = new THREE.Vector3(); bbox.getCenter(center);
+                    const group = new THREE.Group();
+                    model.position.set(-center.x, -center.y, -center.z); group.add(model);
+
+                    const maxDim = Math.max(size.x, size.y, size.z, 0.0001);
+                    let scale = targetMaxDim / maxDim;
+                    scale = THREE.MathUtils.clamp(scale, 0.01, 10); // safety clamp against degenerate geometry
+                    group.scale.setScalar(scale);
+
+                    const scaledSize = size.clone().multiplyScalar(scale);
+                    group.position.set(posX, mattTopY + scaledSize.y * 0.5 + 0.02, posZ);
+                    scene.add(group);
+                    addContactShadow(group.position.x, mattTopY + 0.02, group.position.z, Math.max(scaledSize.x, scaledSize.z) * 0.55);
+                    const pieceName = url.replace(/\.glb$/i, '');
+                    group.name = pieceName;
+                    // Ramps/track pieces are real driving obstacles/features.
+                    makePhysicsBody(group, staticBody ? 0 : 0.3, { isObstacle: true, debugName: pieceName });
+                    if (callback) callback(group, scaledSize);
+                }, undefined, function (err) {
+                    console.warn('Failed to load ' + url, err);
+                });
+            }
+
+            // Ramp/track piece models (car_racing_ramp.glb, circle_ramp.glb,
+            // low_poly_race_track.glb) have been removed — those assets were
+            // missing (404) and kept failing to load on every run.
+
+            const tinRadiusBase = mattSize.x * 0.018;
+            const tinHeightBase = mattSize.x * 0.034;
+            const tinDefs = [
+                { x: 0.39, z: -0.47, scale: 1.15, color: 0xb8341f, name: 'Matt Red' },
+                { x: 0.45, z: -0.41, scale: 0.95, color: 0x1d1d1d, name: 'Matt Black' },
+                { x: 0.40, z: -0.34, scale: 1.05, color: 0x4a90d9, name: 'Sea Blue' },
+                { x: 0.47, z: -0.28, scale: 0.85, color: 0xd9c23a, name: 'Gold' },
+                { x: 0.43, z: -0.21, scale: 1.0, color: 0x8c8c8c, name: 'Aluminium' },
+                { x: -0.46, z: 0.45, scale: 1.0, color: 0x3a8c4a, name: 'Brunswick Grn' },
+                { x: -0.40, z: 0.41, scale: 0.9, color: 0xe0e0e0, name: 'White' }
+            ];
+
+            tinDefs.forEach(def => {
+                const radius = tinRadiusBase * def.scale;
+                const height = tinHeightBase * def.scale;
+                const tin = createPaintTin(def.color, def.name, radius, height);
+                tin.position.set(mattSize.x * def.x, mattTopY + 0.02, mattSize.z * def.z);
+                tin.rotation.y = Math.random() * Math.PI * 2;
+                scene.add(tin);
+                addContactShadow(tin.position.x, tin.position.y, tin.position.z, radius * 1.7);
+                tin.name = 'paint_tin_' + def.name.replace(/\s+/g, '_');
+                makePhysicsBody(tin, 0.09 * def.scale, { isObstacle: false, debugName: tin.name });
+            });
+
+            const bottleDefs = [
+                { x: 0.30, z: -0.46, color: 0xc23b3b }, { x: 0.34, z: -0.40, color: 0x3b6fc2 }
+            ];
+            bottleDefs.forEach(def => {
+                const radius = mattSize.x * 0.012;
+                const height = mattSize.x * 0.05;
+                const bottle = createPaintBottle(def.color, radius, height);
+                bottle.position.set(mattSize.x * def.x, mattTopY + 0.02, mattSize.z * def.z);
+                bottle.rotation.y = Math.random() * Math.PI * 2;
+                scene.add(bottle);
+                addContactShadow(bottle.position.x, bottle.position.y, bottle.position.z, radius * 1.8);
+                bottle.name = 'paint_bottle';
+                makePhysicsBody(bottle, 0.06, { isObstacle: false, debugName: 'paint_bottle' });
+            });
+
+            const eraserGeo = new THREE.BoxGeometry(mattSize.x * 0.045, mattSize.x * 0.012, mattSize.x * 0.018);
+            const eraserMat = new THREE.MeshStandardMaterial({ color: 0x7a7a7a, roughness: 0.7 });
+            const eraser = new THREE.Mesh(eraserGeo, eraserMat);
+            eraser.castShadow = true; eraser.receiveShadow = true;
+            eraser.position.set(mattSize.x * 0.10, mattTopY + mattSize.x * 0.006 + 0.02, mattSize.z * 0.40);
+            eraser.rotation.y = 0.4;
+            scene.add(eraser);
+            addContactShadow(eraser.position.x, mattTopY + 0.02, eraser.position.z, mattSize.x * 0.035);
+            eraser.name = 'eraser';
+            makePhysicsBody(eraser, 0.03, { isObstacle: false, debugName: 'eraser' });
+
+            let __skyLoaded = false;
+            const skyLoader = new THREE.GLTFLoader();
+            const origSkyLoad = skyLoader.load.bind(skyLoader);
+            skyLoader.load = function(url, onLoad, onProgress, onError) {
+                console.log('Attempting to load:', url);
+                return origSkyLoad(url, onLoad, onProgress, function(error) {
+                    console.error('Failed to load ' + url + ':', error);
+                    if (onError) onError(error);
+                });
+            };
+            skyLoader.load('sky.glb', function (gltf) {
+                const sky = gltf.scene;
+                let foundTexture = null;
+                sky.traverse(function (n) {
+                    n.visible = true;
+                    if (n.isMesh) {
+                        n.frustumCulled = false;
+                        const mats = Array.isArray(n.material) ? n.material : [n.material];
+                        for (const m of mats) {
+                            if (!m) continue;
+                            if (m.map || m.emissiveMap) foundTexture = m.map || m.emissiveMap;
+                        }
+                    }
+                });
+
+                const mat = new THREE.MeshBasicMaterial({
+                    map: foundTexture || null, color: 0xffffff, side: THREE.DoubleSide, fog: false, depthWrite: false, toneMapped: false
+                });
+                sky.traverse(node => { if (node.isMesh) node.material = mat; });
+
+                const box = new THREE.Box3().setFromObject(sky);
+                const size = new THREE.Vector3(); box.getSize(size);
+                const center = new THREE.Vector3(); box.getCenter(center);
+                let maxDim = Math.max(size.x, size.y, size.z);
+                let scale = maxDim > 0 ? 3800 / maxDim : 1000;
+
+                sky.scale.setScalar(scale);
+                sky.position.set(isFinite(center.x) ? -center.x * scale : 0, -50, isFinite(center.z) ? -center.z * scale : 0);
+                sky.frustumCulled = false; sky.renderOrder = -1000;
+                scene.add(sky);
+                __skyLoaded = true;
+            }, undefined, function () {
+                if (!__skyLoaded) {
+                    const sphereGeo = new THREE.SphereGeometry(4000, 48, 32);
+                    const mat = new THREE.MeshBasicMaterial({ color: 0x0e2860, side: THREE.BackSide, fog: false, depthWrite: false });
+                    const dome = new THREE.Mesh(sphereGeo, mat);
+                    dome.position.set(0, mattTopY, 0); scene.add(dome);
+                }
+            });
+        });
+
+        controls.addEventListener('start', () => {
+            shouldLerpCamera = false;
+            cameraLerpCompleteCallback = null;
+        });
+
+        const MAX_TARGET_RADIUS = 500;
+        const MIN_CAMERA_HEIGHT = 2;
+
+        const clock = new THREE.Clock();
+
+        const targetCamPos = camera.position.clone();
+        const targetControlTarget = controls.target.clone();
+        let cameraLerpCompleteCallback = null;
+
+        // Smoothly move the main camera to a position/target, then run onComplete once it settles.
+        function moveCameraTo(pos, target, onComplete) {
+            targetCamPos.copy(pos);
+            targetControlTarget.copy(target);
+            shouldLerpCamera = true;
+            cameraLerpCompleteCallback = onComplete || null;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = Math.min(clock.getDelta(), 0.1);
+
+            if (shouldLerpCamera) {
+                camera.position.lerp(targetCamPos, 0.15);  // Increased from 0.05 for smoother, faster follows
+                controls.target.lerp(targetControlTarget, 0.15);
+
+                if (camera.position.distanceTo(targetCamPos) < 0.08 && controls.target.distanceTo(targetControlTarget) < 0.08) {
+                    camera.position.copy(targetCamPos);
+                    controls.target.copy(targetControlTarget);
+                    shouldLerpCamera = false;
+                    if (cameraLerpCompleteCallback) {
+                        const cb = cameraLerpCompleteCallback;
+                        cameraLerpCompleteCallback = null;
+                        cb();
+                    }
+                }
+            }
+
+            if (carGroup && carGroup.visible && carInnerModel) {
+                const moveForward = keys.w || keys.ArrowUp;
+                const moveBackward = keys.s || keys.ArrowDown;
+                const turnLeft = keys.a || keys.ArrowLeft;
+                const turnRight = keys.d || keys.ArrowRight;
+
+                // Nitro boost: hold Shift while moving forward to consume nitro for a burst of speed
+                const wantsBoost = keys.Shift && moveForward && !returnToSpawn;
+                isBoosting = wantsBoost && nitroAmount > 0.5;
+
+                if (isBoosting) {
+                    nitroAmount = Math.max(0, nitroAmount - NITRO_DRAIN_RATE * delta);
+                } else {
+                    nitroAmount = Math.min(NITRO_MAX, nitroAmount + NITRO_REGEN_RATE * delta);
+                }
+
+                if (nitroBarFillEl) {
+                    nitroBarFillEl.style.width = (nitroAmount / NITRO_MAX * 100) + '%';
+                    nitroBarFillEl.classList.toggle('boosting', isBoosting);
+                    nitroBarFillEl.classList.toggle('empty', nitroAmount < 0.5);
+                }
+                if (isBoosting && !wasBoostingLastFrame && boostFlashEl) {
+                    boostFlashEl.classList.remove('show');
+                    void boostFlashEl.offsetWidth;
+                    boostFlashEl.classList.add('show');
+                }
+                wasBoostingLastFrame = isBoosting;
+                if (nitroFlames) {
+                    nitroFlames.visible = isBoosting;
+                    if (isBoosting) {
+                        const flicker = 0.85 + Math.random() * 0.3;
+                        nitroFlames.children.forEach(pair => pair.scale.set(1, flicker, 1));
+                    }
+                }
+
+                const effMaxSpeed = isBoosting ? CAR_PHYSICS.maxSpeed * NITRO_SPEED_MULT : CAR_PHYSICS.maxSpeed;
+                const effAcceleration = isBoosting ? CAR_PHYSICS.acceleration * NITRO_ACCEL_MULT : CAR_PHYSICS.acceleration;
+
+                // Normal driving controls when not returning to spawn
+                if (!returnToSpawn) {
+                    if (moveForward) {
+                        if (carSpeed < 0) carSpeed += CAR_PHYSICS.brake * delta;
+                        else carSpeed += effAcceleration * delta;
+                    } else if (moveBackward) {
+                        if (carSpeed > 0) carSpeed -= CAR_PHYSICS.brake * delta;
+                        else carSpeed -= CAR_PHYSICS.acceleration * delta;
+                    } else {
+                        if (carSpeed > 0) carSpeed = Math.max(0, carSpeed - CAR_PHYSICS.deceleration * delta);
+                        else if (carSpeed < 0) carSpeed = Math.min(0, carSpeed + CAR_PHYSICS.deceleration * delta);
+                    }
+                    carSpeed = THREE.MathUtils.clamp(carSpeed, CAR_PHYSICS.reverseSpeed, effMaxSpeed);
+
+                    let targetSteer = 0;
+                    if (turnLeft) targetSteer = CAR_PHYSICS.maxSteerAngle;
+                    if (turnRight) targetSteer = -CAR_PHYSICS.maxSteerAngle;
+
+                    steeringAngle = THREE.MathUtils.lerp(steeringAngle, targetSteer, CAR_PHYSICS.steeringSpeed * delta);
+
+                    if (Math.abs(carSpeed) > 0.1) {
+                        const directionMultiplier = 1;
+                        carHeading += steeringAngle * (carSpeed / effMaxSpeed) * directionMultiplier * 2.5 * delta;
+                    }
+                }
+
+                // Smooth return to spawn position when flag is set
+                if (returnToSpawn) {
+                    const spawnPos = new THREE.Vector3(0, mattTopY || 0, 0);
+                    // Use a faster lerp so the car snaps back quickly even when
+                    // it has driven far off the mat.
+                    const dist = carGroup.position.distanceTo(spawnPos);
+                    const lerpSpeed = dist > 30 ? 0.18 : 0.12;
+                    carGroup.position.lerp(spawnPos, lerpSpeed);
+                    carHeading = lerpAngle(carHeading, REST_HEADING, 0.12);
+                    carGroup.rotation.y = lerpAngle(carGroup.rotation.y, REST_HEADING, 0.12);
+                    carSpeed = THREE.MathUtils.lerp(carSpeed, 0, 0.18);
+                    steeringAngle = THREE.MathUtils.lerp(steeringAngle, 0, 0.18);
+                    // Snap exactly once close enough
+                    let headingDiff = (REST_HEADING - carGroup.rotation.y) % (Math.PI * 2);
+                    if (headingDiff > Math.PI) headingDiff -= Math.PI * 2;
+                    if (headingDiff < -Math.PI) headingDiff += Math.PI * 2;
+                    if (carGroup.position.distanceToSquared(spawnPos) < 0.01 && Math.abs(headingDiff) < 0.02) {
+                        returnToSpawn = false;
+                        carHeading = REST_HEADING;
+                        carGroup.rotation.set(0, REST_HEADING, 0, 'YXZ');
+                        if (returnToSpawnCompleteCallback) {
+                            const cb = returnToSpawnCompleteCallback;
+                            returnToSpawnCompleteCallback = null;
+                            cb();
+                        }
+                    }
+                }
+
+                // ── Wheel animation: spin all, steer front ─────────────────────
+                const frontPivots = carGroup.userData.frontTirePivots || [];
+                const rearPivots = carGroup.userData.rearTirePivots || [];
+
+                // Front tires: nested pivots (steer outer, spin inner)
+                // Steering applied to outer pivot (rotation.y)
+                // Spinning applied to inner pivot (rotation.x)
+                frontPivots.forEach(tireData => {
+                    const steerPivot = tireData.pivot || tireData;
+                    const spinPivot = tireData.spinPivot || steerPivot;
+                    const radius = tireData.radius || 1;
+                    const spinDelta = (carSpeed / radius) * delta;
+                    
+                    // Apply steering to outer pivot (Y axis only)
+                    steerPivot.rotation.y = THREE.MathUtils.lerp(steerPivot.rotation.y || 0, steeringAngle, 0.15);
+                    
+                    // Apply spin to inner pivot (X axis only)
+                    spinPivot.rotation.x += spinDelta;
+                });
+                
+                // Rear tires: simple spin only (no nested pivots)
+                rearPivots.forEach(tireData => {
+                    const spinPivot = tireData.spinPivot || tireData.pivot || tireData;
+                    const radius = tireData.radius || 1;
+                    const spinDelta = (carSpeed / radius) * delta;
+                    
+                    // Apply spin only (X axis)
+                    spinPivot.rotation.x += spinDelta;
+                });
+
+                // Apply regular movement when not returning (or simultaneous for smoothness)
+                if (!returnToSpawn) {
+                    const curX = carGroup.position.x;
+                    const curZ = carGroup.position.z;
+                    const moveX = Math.sin(carHeading) * carSpeed * delta;
+                    const moveZ = Math.cos(carHeading) * carSpeed * delta;
+
+                    // Invisible island border: clamp the car's footprint to stay
+                    // fully within the circular island (the sand ground disk),
+                    // not just the small desk mat, so it can never drive off the
+                    // island's edge. Resolved as a radial clamp from the island
+                    // center so the car slides smoothly along the shoreline
+                    // instead of freezing the instant it touches it.
+                    let resolvedX = curX + moveX;
+                    let resolvedZ = curZ + moveZ;
+
+                    const carEdgeRadius = carFootprintHalfSize
+                        ? Math.hypot(carFootprintHalfSize.x, carFootprintHalfSize.z)
+                        : 0;
+                    const islandLimit = radius - carEdgeRadius;
+                    const distFromCenter = Math.hypot(resolvedX, resolvedZ);
+                    if (distFromCenter > islandLimit && distFromCenter > 0) {
+                        const scaleBack = islandLimit / distFromCenter;
+                        resolvedX *= scaleBack;
+                        resolvedZ *= scaleBack;
+                        if (carSpeed > 0) carSpeed *= 0.5;
+                    }
+
+                    carGroup.position.x = resolvedX;
+                    carGroup.position.z = resolvedZ;
+                    // Rotation (Y/pitch/roll) is handled by the tilt block below.
+                }
+
+                if (carPhysicsBody && carPhysicsHalfSize) {
+                    // FIX #4: Physics body Y should match visual mesh Y
+                    // The mesh (carInnerModel) was already positioned with heightOffset,
+                    // so the physics box's center should be at carGroup.position.y (no additional offset)
+                    const newX = carGroup.position.x, newY = carGroup.position.y, newZ = carGroup.position.z;
+                    if (delta > 0.0001) {
+                        carPhysicsBody.velocity.set((newX - carPhysicsBody.position.x) / delta,
+                            (newY - carPhysicsBody.position.y) / delta,
+                            (newZ - carPhysicsBody.position.z) / delta
+                        );
+                    }
+                    carPhysicsBody.position.set(newX, newY, newZ);
+                    carPhysicsBody.quaternion.setFromEuler(0, carHeading, 0);
+                }
+
+                if (isDriveMode && !shouldLerpCamera && currentCameraMode === CameraMode.FREE) {
+                    controls.target.lerp(carGroup.position, 0.07);
+                }
+
+                // ── Ground tilt: 4-corner raycast → chassis pitch/roll only ──────
+                // carGroup.position.y is NEVER changed here — it was set correctly
+                // at spawn and must stay fixed. We only compute pitch and roll so
+                // the chassis leans when crossing the mat edge or uneven ground.
+                if (carGroup.userData.suspension) {
+                    const sus = carGroup.userData.suspension;
+                    const cSize = carGroup.userData.carSize;
+                    const rayCaster = new THREE.Raycaster();
+                    const rayDir = new THREE.Vector3(0, -1, 0);
+                    const collidables = susCollidables;
+                    const groundY = [mattTopY, mattTopY, mattTopY, mattTopY];
+
+                    carGroup.updateMatrixWorld(true);
+
+                    for (let wi = 0; wi < 4; wi++) {
+                        // Cast from well above the wheel corner downward
+                        const worldPt = carGroup.localToWorld(sus.localPos[wi].clone());
+                        worldPt.y += 8;
+                        rayCaster.set(worldPt, rayDir);
+                        rayCaster.far = 20;
+                        const hits = rayCaster.intersectObjects(collidables, false);
+                        if (hits.length > 0) groundY[wi] = hits[0].point.y;
+                    }
+
+                    // Chassis pitch and roll from corner height differences
+                    const frontY = (groundY[0] + groundY[1]) * 0.5;
+                    const rearY  = (groundY[2] + groundY[3]) * 0.5;
+                    const leftY  = (groundY[0] + groundY[2]) * 0.5;
+                    const rightY = (groundY[1] + groundY[3]) * 0.5;
+
+                    const targetPitch = Math.atan2(frontY - rearY,  sus.wheelBase  * 2);
+                    const targetRoll  = Math.atan2(rightY - leftY,  sus.trackWidth * 2)
+                                      + (-steeringAngle * (Math.abs(carSpeed) / CAR_PHYSICS.maxSpeed) * 0.04);
+
+                    const t = Math.min(6 * delta, 1);
+                    carGroup.rotation.set(
+                        THREE.MathUtils.lerp(carGroup.rotation.x, targetPitch, t),
+                        carHeading,
+                        THREE.MathUtils.lerp(carGroup.rotation.z, targetRoll,  t),
+                        'YXZ'
+                    );
+                } else {
+                    // No suspension data yet — just apply heading
+                    carGroup.rotation.y = carHeading;
+                }
+            }
+
+            if (!physicsReady) tryInitPhysics();
+            if (physicsReady && physicsWorld) {
+                physicsWorld.step(1 / 60, delta, 6);
+
+                // ── Sync dynamic props from Cannon → Three.js ──────────────────
+                for (let i = 0; i < physicsObjects.length; i++) {
+                    const po = physicsObjects[i];
+                    const b = po.body;
+                    if (!b.__isDynamic) continue; // statics don't need syncing
+                    
+                    // Ground-snap: if object is very close to ground (floating point error)
+                    // but moving slowly, snap it down and stop oscillation
+                    const groundLevel = mattTopY || 0;
+                    const halfHeight = b.__halfExtentsSize ? b.__halfExtentsSize.y : 0.5;
+                    const expectedGroundY = groundLevel + halfHeight + 0.002;  // Reduced threshold to 2mm
+                    const floatingThreshold = 0.05;  // Reduced from 0.12 to catch floating earlier
+                    const speedThreshold = 0.08;     // How slow before snapping
+                    
+                    if (b.position.y < expectedGroundY + floatingThreshold && 
+                        b.position.y > expectedGroundY - 0.15) {
+                        // Object is near ground level
+                        const speed = Math.hypot(b.velocity.x, b.velocity.y, b.velocity.z);
+                        const vy = b.velocity.y || 0;
+                        
+                        // FIX #3: Snap if:
+                        // 1. Very slow (nearly stopped), OR
+                        // 2. Falling slowly toward ground (not bouncing upward)
+                        const isAlmostStopped = speed < speedThreshold;
+                        const isFallingGently = vy < 0.05 && speed < speedThreshold * 3;
+                        
+                        if (isAlmostStopped || isFallingGently) {
+                            b.position.y = expectedGroundY;
+                            b.velocity.y = 0;
+                            // More aggressive damping to stop oscillation
+                            b.velocity.x *= 0.88;
+                            b.velocity.z *= 0.88;
+                            b.angularVelocity.x *= 0.80;
+                            b.angularVelocity.y *= 0.80;
+                            b.angularVelocity.z *= 0.80;
+                            b.sleep();
+                        }
+                    }
+                    
+                    po.obj.position.set(b.position.x, b.position.y, b.position.z);
+                    po.obj.quaternion.set(b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w);
+                    
+                    // FIX #7: Auto-resync if mesh and body desync by > 0.01 units
+                    // This catches any floating-point errors or parent transform issues
+                    const meshBodyDist = po.obj.position.distanceTo(b.position);
+                    if (meshBodyDist > 0.01) {
+                        // Mesh is misaligned - force resync
+                        po.obj.position.copy(b.position);
+                        po.obj.quaternion.copy(b.quaternion);
+                        
+                        // Log the issue
+                        if (Math.random() < 0.05) {
+                            console.warn(`[Physics] Auto-resynced: ${po.body.__debugName || 'unknown'} (desync: ${meshBodyDist.toFixed(4)}u)`);
+                        }
+                    }
+                    
+                    // Hide and remove objects that go too high (outside scene bounds)
+                    if (b.position.y > 50) {
+                        po.obj.visible = false;
+                        po.obj.traverse(child => child.visible = false);
+                        b.position.set(1000, 1000, 1000);
+                        b.velocity.set(0, 0, 0);
+                        b.angularVelocity.set(0, 0, 0);
+                    }
+                    
+                    // Catch anything that fell through the world and reset it
+                    if (b.position.y < -40) {
+                        b.position.set(b.__initialPos.x, b.__initialPos.y, b.__initialPos.z);
+                        if (b.__initialQuat) b.quaternion.set(b.__initialQuat.x, b.__initialQuat.y, b.__initialQuat.z, b.__initialQuat.w);
+                        b.velocity.set(0, 0, 0);
+                        b.angularVelocity.set(0, 0, 0);
+                        b.sleep();
+                    }
+                }
+
+                // ── Car impulse push on nearby dynamic props ────────────────────
+                // Each frame, any dynamic physics body whose AABB overlaps or is
+                // very close to the car's footprint receives an impulse proportional
+                // to the car's speed and mass ratio. This gives realistic "bowling"
+                // behaviour without needing the car itself to be a full rigid body.
+                if (carGroup && carGroup.visible && Math.abs(carSpeed) > 0.5) {
+                    const CANNON = window.CANNON;
+                    const carFwd = new THREE.Vector3(Math.sin(carHeading), 0, Math.cos(carHeading));
+                    const carVel = carFwd.clone().multiplyScalar(carSpeed);
+                    const carPos = carGroup.position;
+
+                    for (let i = 0; i < physicsObjects.length; i++) {
+                        const po = physicsObjects[i];
+                        const b = po.body;
+                        if (!b.__isDynamic) continue;
+
+                        const dx = b.position.x - carPos.x;
+                        const dz = b.position.z - carPos.z;
+                        const dist = Math.hypot(dx, dz);
+                        // Push radius: car half-diagonal + prop half-size + small buffer
+                        const pushRadius = (carPhysicsHalfSize
+                            ? Math.hypot(carPhysicsHalfSize.x, carPhysicsHalfSize.z)
+                            : 5) + (b.__halfX || 1.5) + 0.5;
+
+                        if (dist < pushRadius && dist > 0.01) {
+                            // Impulse scaled by speed and inversely by mass,
+                            // but capped so objects slide/tip rather than flying.
+                            const speedFactor = Math.abs(carSpeed) / CAR_PHYSICS.maxSpeed;
+                            const massFactor = 1 / Math.max(b.mass, 0.3);
+                            const impulseMag = Math.min(speedFactor * 3 * massFactor, 8);
+
+                            const nx = dx / dist, nz = dz / dist;
+                            // Small upward component so light objects tip over,
+                            // but capped so nothing launches into the sky.
+                            const upTilt = b.mass < 1.0 ? 0.15 : 0.05;
+                            b.wakeUp();
+                            b.applyImpulse(
+                                new CANNON.Vec3(nx * impulseMag, upTilt * impulseMag, nz * impulseMag),
+                                new CANNON.Vec3(0, 0, 0)
+                            );
+                        }
+                    }
+                }
+            }
+
+            // ── Tire smoke + tire marks ────────────────────────────────────────
+            if (isDriveMode && carGroup && carGroup.visible) {
+                const spd = Math.abs(carSpeed);
+                const groundY = mattTopY || 0;
+
+                // Emit smoke when accelerating hard or braking
+                smokeClock += delta;
+                const smokeInterval = isBoosting ? 0.04 : 0.10;
+                if (spd > 8 && smokeClock > smokeInterval) {
+                    smokeClock = 0;
+                    const cx = carGroup.position.x, cz = carGroup.position.z;
+                    const back = new THREE.Vector3(-Math.sin(carHeading), 0, -Math.cos(carHeading));
+                    const right = new THREE.Vector3(Math.cos(carHeading), 0, -Math.sin(carHeading));
+                    const wb = carGroup.userData.carSize ? carGroup.userData.carSize.z * 0.46 : 4;
+                    const tw = carGroup.userData.carSize ? carGroup.userData.carSize.x * 0.40 : 2;
+                    // rear-left and rear-right wheel positions
+                    [[-1, 1], [1, 1]].forEach(([sx, sz]) => {
+                        const px = cx + right.x * tw * sx + back.x * wb;
+                        const pz = cz + right.z * tw * sx + back.z * wb;
+                        createSmokeParticle(px, groundY, pz);
+                    });
+                }
+
+                // Tire marks created more frequently to ensure no gaps
+                // Stamps are stretched to connect to previous position
+                markClock += delta;
+                if (spd > 5) {
+                    if (markClock > 0.05) {  // Reduced from 0.15 to 0.05 for continuous marks
+                        markClock = 0;
+                        const cx = carGroup.position.x, cz = carGroup.position.z;
+                        const back = new THREE.Vector3(-Math.sin(carHeading), 0, -Math.cos(carHeading));
+                        const right = new THREE.Vector3(Math.cos(carHeading), 0, -Math.sin(carHeading));
+                        const wb = carGroup.userData.carSize ? carGroup.userData.carSize.z * 0.46 : 4;
+                        const tw = carGroup.userData.carSize ? carGroup.userData.carSize.x * 0.38 : 2;
+                        [[-1, 0], [1, 1]].forEach(([sx, wheelIdx]) => {
+                            const px = cx + right.x * tw * sx + back.x * wb;
+                            const pz = cz + right.z * tw * sx + back.z * wb;
+                            createTireMark(px, pz, carHeading, groundY, wheelIdx);
+                        });
+                    }
+                } else {
+                    // Too slow to be laying marks — break the connection so
+                    // the next print doesn't stretch back to the old spot.
+                    lastMarkPos[0] = null;
+                    lastMarkPos[1] = null;
+                }
+            } else {
+                // Not currently laying marks (parked, too slow, or out of
+                // drive mode) — clear the connecting-segment memory so the
+                // next mark starts fresh instead of drawing one long streak
+                // back to wherever the car last left a print.
+                lastMarkPos[0] = null;
+                lastMarkPos[1] = null;
+            }
+            updateSmoke(delta);
+            updateTireMarks();
+
+            const targetDist = Math.sqrt(controls.target.x * controls.target.x + controls.target.z * controls.target.z);
+            if (targetDist > MAX_TARGET_RADIUS) {
+                const scale = MAX_TARGET_RADIUS / targetDist;
+                controls.target.x *= scale; controls.target.z *= scale;
+            }
+            if (camera.position.y < MIN_CAMERA_HEIGHT) {
+                camera.position.y = MIN_CAMERA_HEIGHT;
+            }
+
+            const time = clock.getElapsedTime();
+            if (typeof water !== 'undefined' && water.geometry) {
+                const pos = water.geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    const x = pos.getX(i); const y = pos.getY(i);
+                    const wave1 = Math.sin(x * 0.08 + time * 1.4) * 0.35;
+                    const wave2 = Math.cos(y * 0.08 + time * 1.0) * 0.28;
+                    const wave3 = Math.sin((x + y) * 0.05 - time * 0.7) * 0.4;
+                    const dist = Math.sqrt(x * x + y * y);
+                    const amp = Math.min(1, Math.max(0, (dist - waterInnerRadius) / (waterOuterRadius - waterInnerRadius)));
+                    pos.setZ(i, waterBaseY[i] + (wave1 + wave2 + wave3) * amp);
+                }
+                pos.needsUpdate = true;
+                water.geometry.computeVertexNormals();
+            }
+
+            water.material.envMapIntensity = 1.2 + Math.sin(time * 0.6) * 0.2;
+            waterGround.material.envMapIntensity = 1.0 + Math.sin(time * 0.4 + 1.3) * 0.15;
+
+            const activeCam = getActiveCamera();
+
+            // Camera position handling loop
+            if (currentCameraMode === CameraMode.DRIVER_FP && carGroup) {
+                const worldPos = carGroup.localToWorld(fpOffset.clone());
+                // No shake in cockpit view - keep it steady for immersion
+                firstPersonCam.position.copy(worldPos);
+
+                // Look direction follows car heading + steering angle for cockpit feel
+                const forwardDirection = new THREE.Vector3(Math.sin(carHeading), 0, Math.cos(carHeading));
+                // Apply steering to look direction - when turning, camera looks left/right
+                const steerInfluence = steeringAngle * 0.3; // Scale steering effect on view
+                const lookDir = forwardDirection.clone()
+                    .add(new THREE.Vector3(Math.sin(carHeading + steerInfluence), 0, Math.cos(carHeading + steerInfluence)))
+                    .normalize();
+                
+                const lookAtTarget = carGroup.position.clone().add(lookDir.multiplyScalar(40));
+                lookAtTarget.y = worldPos.y - 0.5;
+                firstPersonCam.lookAt(lookAtTarget);
+            }
+
+            if (currentCameraMode === CameraMode.CHASE_BACK && carGroup) {
+                const worldPos = carGroup.localToWorld(tpOffset.clone());
+                thirdBackCam.position.lerp(worldPos, 0.20);  // Increased from 0.15 for even smoother follow
+
+                const lookAtPos = carGroup.position.clone().add(new THREE.Vector3(0, 1.5, 0));
+                lookAtPos.x += Math.sin(carHeading) * 10;
+                lookAtPos.z += Math.cos(carHeading) * 10;
+                thirdBackCam.lookAt(lookAtPos);
+            }
+            if (currentCameraMode === CameraMode.CINEMATIC) {
+                if (!window.cinematicRunning) {
+                    window.cinematicRunning = true;
+                    startCinematicCycle();
+                }
+                if (isDriveMode && carGroup) {
+                    cinematicControls.target.lerp(carGroup.position, 0.12);  // Smooth camera follow
+                }
+                cinematicControls.update();
+            } else {
+                window.cinematicRunning = false;
+            }
+            if (currentCameraMode === CameraMode.FREE) {
+                controls.update();
+                applyCameraCollision(camera);
+            }
+            renderer.render(scene, activeCam);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            const newAspect = window.innerWidth / window.innerHeight;
+            camera.aspect = newAspect;
+            camera.updateProjectionMatrix();
+            firstPersonCam.aspect = newAspect;
+            firstPersonCam.updateProjectionMatrix();
+            thirdBackCam.aspect = newAspect;
+            thirdBackCam.updateProjectionMatrix();
+            cinematicCam.aspect = newAspect;
+            cinematicCam.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+
+    <script>
+        const instructionUI = document.getElementById('instructions');
+
+        document.getElementById('kitBtn').addEventListener('click', () => {
+            if (driveIntroPlaying) return;
+            if (document.getElementById('kitBtn').disabled) return;
+
+            // Show Kit info box immediately
+            document.getElementById('kitInfo').classList.add('visible');
+            document.getElementById('driveInfo').classList.remove('visible');
+
+            hideDriveUI();
+            controls.enabled = false;
+
+            // Step 1 — car and camera move to rest position SIMULTANEOUSLY
+            let carDone = false;
+            let camDone = false;
+            const bothDone = () => {
+                if (!carDone || !camDone) return;
+
+                // Step 2 — after both settle, hide car and play video
+                if (carGroup) carGroup.visible = false;
+                playDriveVideo(false, () => {
+                    resetPhysicsPropsToStart();
+                    exitCinematicBars();
+                    controls.enabled = true;
+                    runKitSequence();
+                }, 'video - REVERSE.mp4');
+            };
+
+            // Car: lerp back to spawn
+            returnCarToSpawn(() => { carDone = true; bothDone(); });
+
+            // Camera: lerp to rest position
+            moveCameraTo(DRIVE_REST_CAM_POS, getDriveRestTarget(), () => { camDone = true; bothDone(); });
+        });
+
+        function runKitSequence() {
+            uiButtonsEl.style.display = 'flex';
+            instructionUI.style.display = 'none';
+            document.getElementById('kitInfo').classList.add('visible');  // Show Kit info box
+            document.getElementById('driveInfo').classList.remove('visible');  // Hide Drive info box
+            isDriveMode = false;
+            document.getElementById('cameraButton').style.display = 'none';
+            nitroContainerEl.style.display = 'none';
+            if (obstaclesGroup) obstaclesGroup.visible = false;
+
+            // Show the kit model now that the video has finished
+            if (kitGroup) kitGroup.visible = true;
+
+            // Switch to free camera mode and settle on the kit view
+            currentCameraMode = CameraMode.FREE;
+            targetCamPos.set(35, 25, 45);
+            targetControlTarget.set(0, mattTopY || 0, 0);
+            shouldLerpCamera = true;
+
+            updateModeButtons();
+        }
+
+        // Rest position the camera returns to before the cinematic drive-intro plays
+        const DRIVE_REST_CAM_POS = new THREE.Vector3(35, 25, 45);
+        function getDriveRestTarget() {
+            return new THREE.Vector3(0, mattTopY || 0, 0);
+        }
+
+        // --- Cinematic drive-intro: plays video.mp4 fullscreen, framed by sliding black bars ---
+        const driveIntroEl = document.getElementById('driveIntro');
+        const driveIntroVideoEl = document.getElementById('driveIntroVideo');
+        const videoInfoBoxEl = document.getElementById('videoInfoBox');
+        const cineLeftEl = document.getElementById('cineLeft');
+        const cineRightEl = document.getElementById('cineRight');
+        const uiButtonsEl = document.getElementById('ui-buttons');
+        let driveIntroPlaying = false;
+
+        function enterCinematicBars() {
+            // Disabled - removed black screen transition
+            // cineLeftEl.classList.add('active');
+            // cineRightEl.classList.add('active');
+        }
+
+        function exitCinematicBars() {
+            // Disabled - removed black screen transition
+            // cineLeftEl.classList.remove('active');
+            // cineRightEl.classList.remove('active');
+        }
+
+        // Hide every UI control so only the video (and its side bars) is visible
+        function hideDriveUI() {
+            uiButtonsEl.style.display = 'none';
+            document.getElementById('cameraButton').style.display = 'none';
+            nitroContainerEl.style.display = 'none';
+            instructionUI.style.display = 'none';
+        }
+
+        function requestPageFullscreen() {
+            const el = document.documentElement;
+            const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+            if (req) {
+                try {
+                    const result = req.call(el);
+                    if (result && result.catch) result.catch(() => { });
+                } catch (e) { /* fullscreen not permitted here, ignore */ }
+            }
+        }
+
+        function exitPageFullscreen() {
+            const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+            if (isFs) {
+                const exit = document.exitFullscreen || document.webkitExitFullscreen;
+                if (exit) {
+                    try {
+                        const result = exit.call(document);
+                        if (result && result.catch) result.catch(() => { });
+                    } catch (e) { /* ignore */ }
+                }
+            }
+        }
+
+        // Plays video fullscreen. reverse=false plays forward normally;
+        // reverse=true rewinds it from the end back to the start (manual scrubbing,
+        // since browsers don't support smooth native reverse playback).
+        // onComplete fires when the video finishes (or fails / is skipped).
+        function playDriveVideo(reverse, onComplete, source = 'video.mp4') {
+            if (driveIntroPlaying) return;
+            driveIntroPlaying = true;
+
+            driveIntroVideoEl.src = source;
+            driveIntroVideoEl.load();
+
+            let finished = false;
+            let rafId = null;
+            let timeoutId = null;
+
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                if (rafId) cancelAnimationFrame(rafId);
+                if (timeoutId) clearTimeout(timeoutId);
+                driveIntroVideoEl.removeEventListener('ended', finish);
+                driveIntroVideoEl.removeEventListener('error', finish);
+                driveIntroEl.style.display = 'none';
+                if (videoInfoBoxEl) videoInfoBoxEl.style.display = 'none';
+                document.getElementById('driveInfo').classList.remove('visible');  // Hide Drive info box after video
+                driveIntroVideoEl.pause();
+                driveIntroPlaying = false;
+                if (onComplete) onComplete();
+            };
+
+            driveIntroEl.style.display = 'flex';
+            if (videoInfoBoxEl) videoInfoBoxEl.style.display = 'block';
+            document.getElementById('driveInfo').classList.add('visible');  // Show Drive info box during video
+            
+            // Normal playback speed (1.0 = normal)
+            driveIntroVideoEl.playbackRate = 1.0;
+            
+            // Auto-finish after 4 seconds
+            timeoutId = setTimeout(finish, 4000);
+
+            // If this playback is the kit reverse clip, swap models in the background
+            try {
+                if (String(source || '').toLowerCase().includes('reverse')) {
+                    if (typeof carGroup !== 'undefined' && carGroup) carGroup.visible = false;
+                    if (typeof kitGroup !== 'undefined' && kitGroup) kitGroup.visible = true;
+                }
+            } catch (e) {
+                // ignore any visibility errors (models may not be loaded yet)
+            }
+
+            if (reverse) {
+                const startRewind = () => {
+                    driveIntroVideoEl.pause();
+                    let t = isFinite(driveIntroVideoEl.duration) ? driveIntroVideoEl.duration : driveIntroVideoEl.currentTime;
+                    driveIntroVideoEl.currentTime = t;
+                    let lastTs = performance.now();
+
+                    const step = (now) => {
+                        if (finished) return;
+                        const dt = (now - lastTs) / 1000;
+                        lastTs = now;
+                        t -= dt;
+                        if (t <= 0) {
+                            driveIntroVideoEl.currentTime = 0;
+                            finish();
+                            return;
+                        }
+                        driveIntroVideoEl.currentTime = t;
+                        rafId = requestAnimationFrame(step);
+                    };
+                    rafId = requestAnimationFrame(step);
+                };
+
+                if (driveIntroVideoEl.readyState >= 1 && isFinite(driveIntroVideoEl.duration)) {
+                    startRewind();
+                } else {
+                    driveIntroVideoEl.addEventListener('loadedmetadata', startRewind, { once: true });
+                    driveIntroVideoEl.load();
+                }
+            } else {
+                driveIntroVideoEl.currentTime = 0;
+                driveIntroVideoEl.addEventListener('ended', finish);
+                driveIntroVideoEl.addEventListener('error', finish);
+
+                const playPromise = driveIntroVideoEl.play();
+                if (playPromise && playPromise.catch) {
+                    playPromise.catch(() => { finish(); }); // autoplay blocked -> skip straight ahead
+                }
+            }
+        }
+
+        document.getElementById('driveBtn').addEventListener('click', () => {
+            if (driveIntroPlaying) return;
+            if (document.getElementById('driveBtn').disabled) return;
+
+            // Show Drive info box immediately
+            document.getElementById('driveInfo').classList.add('visible');
+            document.getElementById('kitInfo').classList.remove('visible');
+
+            hideDriveUI();
+            currentCameraMode = CameraMode.FREE;
+            controls.enabled = false;
+
+            // 1. Move camera to rest position first
+            moveCameraTo(DRIVE_REST_CAM_POS, getDriveRestTarget(), () => {
+                // 2. After camera settles, play video
+                playDriveVideo(false, () => {
+                    exitCinematicBars();
+                    controls.enabled = true;
+                    startDriveSequence();
+                }, 'video.mp4');
+            });
+        });
+
+        function startDriveSequence() {
+            uiButtonsEl.style.display = 'flex';
+            instructionUI.style.display = 'none';  // Hide left instructions panel
+            document.getElementById('kitInfo').classList.remove('visible');  // Hide Kit info box
+            document.getElementById('driveInfo').classList.add('visible');  // Show Drive info box
+            isDriveMode = true;
+            if (CAR_DEBUG) console.log("Drive:", isDriveMode);
+            // Focus-recovery: guarantee keyboard focus is on the canvas the
+            // instant Drive mode starts. If the last click before this was on
+            // a UI button, a docked DevTools panel, or anything else, WASD
+            // would otherwise silently go nowhere even though isDriveMode is
+            // true and the movement code is running correctly every frame.
+            renderer.domElement.focus();
+            __anyKeyReceived = false;
+            document.getElementById('cameraButton').style.display = 'flex';
+            nitroContainerEl.style.display = 'flex';
+
+            // Drive mode is now active: lock the Drive button, unlock the Kit button
+            updateModeButtons();
+            nitroAmount = NITRO_MAX;
+            if (nitroBarFillEl) { nitroBarFillEl.style.width = '100%'; nitroBarFillEl.classList.remove('boosting', 'empty'); }
+
+            if (carGroup) {
+                // Position camera close to the car for a good driving view
+                const carPos = carGroup.position;
+                targetCamPos.set(carPos.x + 12, carPos.y + 8, carPos.z + 15);
+                targetControlTarget.copy(carPos);
+                shouldLerpCamera = true;
+                carGroup.visible = true;
+
+                // Requirements 3-5/10: never let the car reappear inside a
+                // collider. If it would, push it to the nearest free spot before
+                // collisions are (re)enabled, then start a fresh grace period.
+                const carRadius = carPhysicsHalfSize ? Math.hypot(carPhysicsHalfSize.x, carPhysicsHalfSize.z) : 3;
+                const matRadius = carFootprintHalfSize ? Math.min(carFootprintHalfSize.x, carFootprintHalfSize.z) : carRadius;
+                carSpawnCenter = { x: carGroup.position.x, z: carGroup.position.z };
+                spawnExclusionRadius = carRadius * 1.5;
+                const freePos = resolveSpawnPosition(carGroup.position.x, carGroup.position.z, carRadius, matRadius);
+                carGroup.position.x = freePos.x;
+                carGroup.position.z = freePos.z;
+                carSpawnCenter = { x: freePos.x, z: freePos.z };
+                carSpawnGraceUntil = performance.now() + CAR_SPAWN_GRACE_MS;
+            } else {
+                targetCamPos.set(26, mattTopY + 18, 32);
+                targetControlTarget.set(0, mattTopY, 0);
+                shouldLerpCamera = true;
+            }
+
+            if (kitGroup) kitGroup.visible = false;
+
+            // FIXED: Added loading guard (isCarLoading) to abort duplicate asynchronous gltf requests
+            if (carGroup || isCarLoading) return;
+            isCarLoading = true;
+
+            loader.load('car.glb', function (gltf) {
+              try {
+                carGroup = new THREE.Group();
+                carInnerModel = gltf.scene;
+
+                carInnerModel.traverse(node => {
+                    if (node.isMesh) {
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                        if (node.material) {
+                            const mats = Array.isArray(node.material) ? node.material : [node.material];
+                            mats.forEach(m => {
+                                if (m.map) { m.map.encoding = THREE.sRGBEncoding; }
+                                m.side = THREE.DoubleSide;
+                                m.fog = false;
+                            });
+                        }
+                    }
+                });
+
+                const box = new THREE.Box3().setFromObject(carInnerModel);
+                const size = new THREE.Vector3();
+                box.getSize(size);
+                const center = new THREE.Vector3();
+                box.getCenter(center);
+                const maxCarDim = Math.max(size.x, size.y, size.z);
+
+                let referenceDim = 60;  // Increased from 40 to make car bigger
+                if (kitTargetSize) {
+                    referenceDim = Math.max(kitTargetSize.x, kitTargetSize.y, kitTargetSize.z);
+                }
+
+                const scale = maxCarDim > 0 ? referenceDim / maxCarDim : 1;
+                carInnerModel.scale.setScalar(scale);
+
+                // Re-measure the bounding box AFTER scale is applied so heightOffset
+                // is accurate in world units — using the pre-scale box.min.y * scale
+                // was causing the levitation bug.
+                carInnerModel.updateMatrixWorld(true);
+                const scaledBox = new THREE.Box3().setFromObject(carInnerModel);
+                let heightOffset = -scaledBox.min.y; // lift inner model so wheel bottoms sit at y=0
+                carHeightOffset = heightOffset;         // store at module scope for spawn Y corrections
+                carInnerModel.position.set(-center.x * scale, heightOffset, -center.z * scale);
+
+                carInnerModel.updateMatrixWorld(true);
+
+                // ── Wheel rotation system ─────────────────────────────────────
+                // ROOT CAUSE of "tires don't rotate": in this GLB every node in
+                // the wheel hierarchy (WHEEL_LF → wheel_fl → … → mesh) has an
+                // IDENTITY local transform — no translation stored on the
+                // nodes at all. The wheel's real position is baked directly
+                // into the mesh's vertex data instead (typical of Sketchfab
+                // exports). That means the old code's `mesh.rotation.x += …`
+                // was spinning each wheel mesh around the coordinate origin of
+                // its parent (effectively the car's center), not around the
+                // wheel's own hub — so instead of spinning in place the wheel
+                // barely, invisibly orbited a far-away point. It never looked
+                // like a rotating tire.
+                //
+                // Fix: for each wheel assembly, compute its true bounding-box
+                // center, insert a pivot Group there, reparent the assembly
+                // under the pivot (shifting it back so nothing visually
+                // jumps), and spin the PIVOT instead of the raw mesh. Rotating
+                // around the correct point makes the spin read correctly.
+                // We still do NOT steer (rotate on Y) — only spin on X — to
+                // avoid the earlier "flying wheels" bug.
+
+                function findAssemblyRoots(root, patterns) {
+                    const results = [];
+                    (function visit(node) {
+                        for (const re of patterns) {
+                            if (re.test(node.name)) { results.push(node); return; }
+                        }
+                        node.children.forEach(visit);
+                    })(root);
+                    return results;
+                }
+
+                // Wraps `node` in a new pivot Group positioned at node's own
+                // bounding-box center, so rotating the pivot spins the mesh
+                // around its true center instead of an arbitrary ancestor
+                // origin. For front tires, creates nested pivots (steer outer, spin inner).
+                // Returns { pivot, spinPivot, radius } or null if node has no geometry.
+                function makeSpinPivot(node, isFrontTire = false) {
+                    if (!node || !node.parent) return null;
+                    node.updateMatrixWorld(true);
+                    const box = new THREE.Box3().setFromObject(node);
+                    if (box.isEmpty()) return null;
+                    const worldCenter = box.getCenter(new THREE.Vector3());
+                    const size = new THREE.Vector3();
+                    box.getSize(size);
+                    const parent = node.parent;
+                    const localCenter = parent.worldToLocal(worldCenter.clone());
+                    const origLocalPos = node.position.clone();
+                    
+                    if (isFrontTire) {
+                        // Create nested pivots for front tires
+                        // Outer pivot: for steering (rotation.y) - positioned at tire center
+                        const steerPivot = new THREE.Group();
+                        steerPivot.name = (node.name || 'wheel') + '_steerPivot';
+                        steerPivot.position.copy(localCenter);
+                        parent.add(steerPivot);
+                        
+                        // Inner pivot: for spinning (rotation.x) - positioned at origin relative to steer pivot
+                        const spinPivot = new THREE.Group();
+                        spinPivot.name = (node.name || 'wheel') + '_spinPivot';
+                        spinPivot.position.set(0, 0, 0);
+                        steerPivot.add(spinPivot);
+                        
+                        // Move tire node under spin pivot
+                        spinPivot.add(node);
+                        // Position tire relative to spin pivot so it stays at the same world position
+                        node.position.copy(origLocalPos).sub(localCenter);
+                        
+                        return { pivot: steerPivot, spinPivot: spinPivot, radius: Math.max(size.y, size.z) * 0.5 };
+                    } else {
+                        // Simple spin pivot for rear tires
+                        const pivot = new THREE.Group();
+                        pivot.name = (node.name || 'wheel') + '_spinPivot';
+                        pivot.position.copy(localCenter);
+                        parent.add(pivot);
+                        pivot.add(node); // reparents node under pivot
+                        node.position.copy(origLocalPos).sub(localCenter); // stay put visually
+                        return { pivot, spinPivot: pivot, radius: Math.max(size.y, size.z) * 0.5 };
+                    }
+                }
+
+                // Strict, anchored patterns matching this car's own naming
+                // convention (WHEEL_LF / TYRE_LF / …). Anchoring with ^
+                // deliberately avoids the in-cockpit "steering_wheel_*" nodes,
+                // which contain "wheel" as a substring but are not tires.
+                let wheelRoots = findAssemblyRoots(carInnerModel, [/^wheel_/i, /^tyre_/i, /^tire_/i]);
+
+                // Looser fallback for other car models with different naming —
+                // whole-word match, still explicitly excluding steering parts.
+                if (wheelRoots.length === 0) {
+                    wheelRoots = findAssemblyRoots(carInnerModel, [/\bwheel\b/i, /\btyre\b/i, /\btire\b/i, /\brim\b/i])
+                        .filter(n => !/steer/i.test(n.name));
+                }
+
+                // Collect front and rear wheels separately so we can:
+                // • Steer only front wheels
+                // • Emit smoke/marks only from rear
+                const frontTirePivots = [];
+                const rearTirePivots = [];
+                // FIX: this was never declared, which threw a ReferenceError the
+                // first time it was read below (`result.radius > spinRadius`).
+                // That crash happened AFTER `carGroup = new THREE.Group()` was
+                // assigned but BEFORE `scene.add(carGroup)`, so carGroup was left
+                // non-null forever while never actually being in the scene — and
+                // isCarLoading was never reset to false either. Every subsequent
+                // click on Drive then hit `if (carGroup || isCarLoading) return;`
+                // and silently bailed out, so the car could never load again.
+                let spinRadius = 0;
+
+                wheelRoots.forEach(root => {
+                    const nm = (root.name || '').toLowerCase();
+                    const isFront = nm.includes('front') || nm.includes('_fl') || nm.includes('_fr') ||
+                                    nm.includes('f_l') || nm.includes('f_r') || nm.includes('lf') ||
+                                    nm.includes('rf') || /wheel_[lr]f/i.test(root.name);
+                    
+                    const result = makeSpinPivot(root, isFront);
+                    if (!result) return;
+                    
+                    if (isFront) {
+                        frontTirePivots.push({ pivot: result.pivot, spinPivot: result.spinPivot, radius: result.radius });
+                    } else {
+                        rearTirePivots.push({ pivot: result.pivot, spinPivot: result.spinPivot, radius: result.radius });
+                    }
+                    if (result.radius > spinRadius) spinRadius = result.radius;
+                });
+
+                // Last-resort fallback: if nothing matched, assume first 2 are
+                // front and rest are rear (or just spin all if < 4 wheels).
+                if (frontTirePivots.length === 0 && rearTirePivots.length === 0) {
+                    carInnerModel.traverse(n => { if (n.isMesh) {
+                        const nm = n.name.toLowerCase();
+                        const isFront = nm.includes('front') || nm.includes('_fl') || nm.includes('_fr');
+                        const entry = { pivot: n, spinPivot: n, radius: spinRadius > 0.1 ? spinRadius : 1 };
+                        if (isFront || frontTirePivots.length < 2) frontTirePivots.push(entry);
+                        else rearTirePivots.push(entry);
+                    }});
+                    if (frontTirePivots.length === 0) {
+                        carInnerModel.traverse(n => { if (n.isMesh) frontTirePivots.push({ pivot: n, spinPivot: n, radius: spinRadius > 0.1 ? spinRadius : 1 }); });
+                    }
+                }
+
+                carGroup.userData.frontTirePivots = frontTirePivots;
+                carGroup.userData.rearTirePivots = rearTirePivots;
+                carGroup.userData.wheelSpinRadius = spinRadius > 0.1 ? spinRadius : 1;
+                
+                // CRITICAL: Recalculate height offset AFTER tire pivots are created
+                // because reparenting tires changes the bounding box minimum
+                carInnerModel.updateMatrixWorld(true);
+                const finalBBox = new THREE.Box3().setFromObject(carInnerModel);
+                // The height offset must be the negative of the minimum Y to bring wheels to Y=0
+                // Add larger margin to lift car up properly
+                const finalHeightOffset = -finalBBox.min.y + 2.5; // Larger margin to lift car higher
+                carHeightOffset = finalHeightOffset;
+                // Reposition car inner model with corrected height offset
+                carInnerModel.position.y = finalHeightOffset;
+                carInnerModel.updateMatrixWorld(true);
+                
+                // Clear legacy arrays
+                frontWheelAssemblies.length = 0;
+                rearWheelAssemblies.length  = 0;
+
+                carGroup.add(carInnerModel);
+                // FIX #1: Don't double-apply offset. carInnerModel already has correct Y.
+                // carGroup is just a container at the mat surface.
+                carGroup.position.set(0, mattTopY, 0);
+                scene.add(carGroup);
+
+                // carSize must be declared HERE — before the suspension block uses it.
+                const carSize = new THREE.Vector3();
+                scaledBox.getSize(carSize);
+
+                // Build the suspension collidable list once now that the scene is complete.
+                // Exclude: the car itself, water meshes, foam, glow overlays, and any
+                // invisible helper. This runs once per Drive-mode entry, not every frame.
+                susCollidables = [];
+                scene.traverse(n => {
+                    if (!n.isMesh) return;
+                    // Exclude anything inside the car hierarchy
+                    let p = n;
+                    while (p) { if (p === carGroup) return; p = p.parent; }
+                    const nm = (n.name || '').toLowerCase();
+                    if (nm.includes('water') || nm.includes('foam') || nm.includes('glow')) return;
+                    if (!n.visible) return;
+                    susCollidables.push(n);
+                });
+
+                // ─── Suspension & ground-contact system ────────────────────────
+                // We use 4 downward raycasts (one per wheel corner) each frame to
+                // find the ground height under each wheel, then:
+                //   • Drive each wheel's visual Y up/down (suspension travel)
+                //   • Tilt the chassis to match the averaged front/rear/left/right heights
+                //   • Keep the car firmly on the ground — no floating
+                //
+                // Wheel rest positions (local to carGroup, before any suspension offset)
+                // are derived from the scaled car size. An F1 car's wheelbase is ~60%
+                // of its length; track width ~55% of its width.
+                const susRestY    = 0;            // rest height of wheel axle relative to carGroup
+                const susTravel   = Math.max(carSize.y * 0.16, 0.42);  // max compression / extension
+                const susStiffness = 16;         // spring constant (visual lerp speed)
+                const susDamping  = 9;          // damper strength to suppress bounce
+                const wheelBase   = carSize.z * 0.52;  // half wheelbase (front/rear from center)
+                const trackWidth  = carSize.x * 0.46;  // half track width (left/right from center)
+
+                // 4 suspension points: [FL, FR, RL, RR]
+                const susLocalPos = [
+                    new THREE.Vector3(-trackWidth,  susRestY,  wheelBase),   // FL
+                    new THREE.Vector3( trackWidth,  susRestY,  wheelBase),   // FR
+                    new THREE.Vector3(-trackWidth,  susRestY, -wheelBase),   // RL
+                    new THREE.Vector3( trackWidth,  susRestY, -wheelBase),   // RR
+                ];
+                // Current compressed Y offset for each wheel (starts at 0 = rest)
+                const susOffset = [0, 0, 0, 0];
+
+                // Build a mapping: wheel assembly index → suspension corner index
+                // so front wheels map to FL/FR and rear wheels to RL/RR
+                const susWheelMap = {
+                    front: [0, 1],  // FL, FR
+                    rear:  [2, 3]   // RL, RR
+                };
+                const wheelStateByCorner = [null, null, null, null];
+                [frontWheelAssemblies[0], frontWheelAssemblies[1], rearWheelAssemblies[0], rearWheelAssemblies[1]].forEach((assembly, corner) => {
+                    if (!assembly) return;
+                    const pivot = assembly.steerPivot || assembly.spinPivot;
+                    if (!pivot) return;
+                    wheelStateByCorner[corner] = {
+                        pivot,
+                        velocity: 0,
+                        currentY: pivot.position.y
+                    };
+                });
+
+                // Store suspension data on carGroup so the animate loop can reach it
+                carGroup.userData.suspension = {
+                    localPos: susLocalPos,
+                    offset: susOffset,
+                    travel: susTravel,
+                    stiffness: susStiffness,
+                    damping: susDamping,
+                    wheelBase,
+                    trackWidth,
+                    wheelMap: susWheelMap,
+                    wheelStates: wheelStateByCorner,
+                    wheelRadius: Math.max(carSize.y * 0.22, 0.34)
+                };
+                carGroup.userData.carSize = carSize;
+                carGroup.userData.heightOffset = heightOffset;
+
+                // Spawn overlap resolution (carPhysicsHalfSize not set yet here)
+                {
+                    const spawnCarRadius = 3;
+                    const spawnMatRadius = Math.min(size.x * scale * 0.42, size.z * scale * 0.44);
+                    carSpawnCenter = { x: carGroup.position.x, z: carGroup.position.z };
+                    spawnExclusionRadius = spawnCarRadius * 1.5;
+                    const freePos = resolveSpawnPosition(carGroup.position.x, carGroup.position.z, spawnCarRadius, spawnMatRadius);
+                    carGroup.position.x = freePos.x;
+                    carGroup.position.z = freePos.z;
+                    carSpawnCenter = { x: freePos.x, z: freePos.z };
+                    carSpawnGraceUntil = performance.now() + CAR_SPAWN_GRACE_MS;
+                }
+
+                // --- Nitro exhaust flame effect (rear of car) ---
+                function makeFlameCone(len, rad, colorHex, opacity) {
+                    const geo = new THREE.ConeGeometry(rad, len, 12, 1, true);
+                    const mat = new THREE.MeshBasicMaterial({
+                        color: colorHex,
+                        transparent: true,
+                        opacity: opacity,
+                        depthWrite: false,
+                        blending: THREE.AdditiveBlending,
+                        side: THREE.DoubleSide
+                    });
+                    const mesh = new THREE.Mesh(geo, mat);
+                    mesh.rotation.x = Math.PI / 2; // point cone along +z/-z after group rotation
+                    mesh.position.z = -len / 2;
+                    return mesh;
+                }
+                nitroFlames = new THREE.Group();
+                const flameLen = Math.max(carSize.z * 0.35, 1.0);
+                const flameRad = Math.max(carSize.x * 0.06, 0.14);
+                const flameGap = carSize.x * 0.14;
+                // Rear exhaust position: near the back of the car, low down
+                const rearZ  = -(carSize.z * 0.48);
+                const flameY = carSize.y * 0.22; // low on the car body
+
+                [-flameGap, flameGap].forEach(xOff => {
+                    const outer = makeFlameCone(flameLen, flameRad, 0x2f8dff, 0.55);
+                    const inner = makeFlameCone(flameLen * 0.6, flameRad * 0.55, 0xbfe8ff, 0.85);
+                    const pair = new THREE.Group();
+                    pair.add(outer, inner);
+                    pair.position.set(xOff, flameY, rearZ);
+                    nitroFlames.add(pair);
+                });
+                nitroFlames.visible = false;
+                carGroup.add(nitroFlames);
+                carPhysicsHalfSize = new THREE.Vector3(carSize.x * 0.38, carSize.y * 0.5, carSize.z * 0.40);
+                // Slightly larger than the physics half-extents for the mat-edge
+                // clamp, but still well under 0.5 so the car can freely roam the
+                // mat without its footprint being wider than the mat itself.
+                carFootprintHalfSize = new THREE.Vector3(carSize.x * 0.42, carSize.y * 0.5, carSize.z * 0.44);
+                const registerCarBody = () => {
+                    const CANNON = window.CANNON;
+                    carPhysicsBody = new CANNON.Body({
+                        mass: 0,
+                        type: CANNON.Body.KINEMATIC,
+                        material: physMat_car,
+                        shape: new CANNON.Box(new CANNON.Vec3(carPhysicsHalfSize.x, carPhysicsHalfSize.y, carPhysicsHalfSize.z))
+                    });
+                    carPhysicsBody.position.set(carGroup.position.x, carGroup.position.y, carGroup.position.z);
+                    physicsWorld.addBody(carPhysicsBody);
+                };
+                if (physicsReady) registerCarBody();
+                else __pendingPhysicsRegistrations.push(registerCarBody);
+
+                isCarLoading = false; // Reset loading state
+              } catch (err) {
+                // Safety net: if anything above throws, don't leave carGroup
+                // non-null (which would silently block every future load
+                // attempt via the `if (carGroup || isCarLoading) return;`
+                // guard). Reset both so clicking Drive again can retry cleanly.
+                console.error('Car setup failed after car.glb loaded:', err);
+                if (carGroup && carGroup.parent) carGroup.parent.remove(carGroup);
+                carGroup = null;
+                carInnerModel = null;
+                isCarLoading = false;
+              }
+            }, undefined, function (err) {
+                console.warn('Failed to load car.glb:', err);
+                isCarLoading = false; // Reset loading state on error
+            });
+        }
+    </script>
+    <script>
+        // Auto-fullscreen has been removed: entering Drive mode (or any other
+        // click) should no longer force the page into fullscreen. We still
+        // fade out and remove the startup loader on load, just without ever
+        // requesting fullscreen.
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('startupLoader');
+            if (!loader) return;
+
+            setTimeout(() => {
+                loader.style.transition = 'opacity 0.35s ease';
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.remove();
+                }, 380);
+            }, 2500);
+        });
+    </script>
+</body>
+
+</html>
